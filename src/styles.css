@@ -1,0 +1,1451 @@
+/* ==========================================================================
+   1. テーマ変数定義
+   ========================================================================== */
+
+/* 1-1. ダークモノクロテーマ (デフォルト) */
+.theme-dark-mono {
+  --bg-app: #0e0e0e;
+  --bg-sidebar: #161616;
+  --bg-panel: rgba(22, 22, 22, 0.85);
+  --bg-lcd: #000000;
+  
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #ffffff;
+  
+  --text-primary: #dddddd;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  
+  --lcd-text: #ffffff;
+  --lcd-text-dim: rgba(255, 255, 255, 0.2);
+  --lcd-glow: 0 0 6px rgba(255, 255, 255, 0.4);
+  
+  --accent-color: #dddddd;
+  --accent-glow: 0 0 10px rgba(255, 255, 255, 0.3);
+  --folder-color: #666666;
+  --btn-toggle-border: rgba(255, 255, 255, 0.1);
+  --btn-toggle-active-border: #ffffff;
+  --btn-toggle-active-bg: rgba(255, 255, 255, 0.12);
+}
+
+/* 1-2. ライトモノクロテーマ */
+.theme-light-mono {
+  --bg-app: #f4f4f7;
+  --bg-sidebar: #e8e8eb;
+  --bg-panel: rgba(255, 255, 255, 0.9);
+  --bg-lcd: #ffffff;
+  
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-focus: #000000;
+  
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  
+  --lcd-text: #000000;
+  --lcd-text-dim: rgba(0, 0, 0, 0.15);
+  --lcd-glow: none;
+  
+  --accent-color: #000000;
+  --accent-glow: 0 0 6px rgba(0, 0, 0, 0.1);
+  --folder-color: #777777;
+  --btn-toggle-border: rgba(0, 0, 0, 0.08);
+  --btn-toggle-active-border: #000000;
+  --btn-toggle-active-bg: rgba(0, 0, 0, 0.06);
+}
+
+/* 1-3. サイバーテーマ (ネオン) */
+.theme-cyber {
+  --bg-app: #0d1117;
+  --bg-sidebar: #161b22;
+  --bg-panel: rgba(22, 27, 34, 0.8);
+  --bg-lcd: #050a0e;
+  
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #58a6ff;
+  
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  
+  --lcd-text: #00f3ff;
+  --lcd-text-dim: rgba(0, 243, 255, 0.25);
+  --lcd-glow: 0 0 8px rgba(0, 243, 255, 0.6);
+  
+  --accent-color: #58a6ff;
+  --accent-glow: 0 0 12px rgba(88, 166, 255, 0.4);
+  --folder-color: #ffca28;
+  --btn-toggle-border: rgba(0, 243, 255, 0.2);
+  --btn-toggle-active-border: #00f3ff;
+  --btn-toggle-active-bg: rgba(0, 243, 255, 0.15);
+}
+
+/* 1-4. サクラテーマ (和風・ピンク) */
+.theme-sakura {
+  --bg-app: #1c1214;
+  --bg-sidebar: #281a1c;
+  --bg-panel: rgba(40, 26, 28, 0.85);
+  --bg-lcd: #100809;
+  
+  --border-color: rgba(255, 182, 193, 0.15);
+  --border-focus: #ffb7c5;
+  
+  --text-primary: #fce4e6;
+  --text-secondary: #dca7ab;
+  --text-muted: #845e61;
+  
+  --lcd-text: #ffb7c5;
+  --lcd-text-dim: rgba(255, 183, 197, 0.25);
+  --lcd-glow: 0 0 8px rgba(255, 183, 197, 0.5);
+  
+  --accent-color: #ffb7c5;
+  --accent-glow: 0 0 12px rgba(255, 183, 197, 0.3);
+  --folder-color: #ffb7c5;
+  --btn-toggle-border: rgba(255, 183, 197, 0.2);
+  --btn-toggle-active-border: #ffb7c5;
+  --btn-toggle-active-bg: rgba(255, 183, 197, 0.15);
+}
+
+/* 1-5. ミッドナイトテーマ (濃紺・ゴールド) */
+.theme-midnight {
+  --bg-app: #060a12;
+  --bg-sidebar: #0e1624;
+  --bg-panel: rgba(14, 22, 36, 0.85);
+  --bg-lcd: #030508;
+  
+  --border-color: rgba(212, 175, 55, 0.15);
+  --border-focus: #ffd700;
+  
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  
+  --lcd-text: #ffd700;
+  --lcd-text-dim: rgba(255, 215, 0, 0.25);
+  --lcd-glow: 0 0 8px rgba(255, 215, 0, 0.5);
+  
+  --accent-color: #ffd700;
+  --accent-glow: 0 0 12px rgba(255, 215, 0, 0.3);
+  --folder-color: #ffd700;
+  --btn-toggle-border: rgba(255, 215, 0, 0.2);
+  --btn-toggle-active-border: #ffd700;
+  --btn-toggle-active-bg: rgba(255, 215, 0, 0.15);
+}
+
+/* 1-6. レトロテーマ (ヴィンテージ・ベージュ調) */
+.theme-retro {
+  --bg-app: #282017;
+  --bg-sidebar: #382d20;
+  --bg-panel: rgba(56, 45, 32, 0.85);
+  --bg-lcd: #15100a;
+  
+  --border-color: rgba(244, 164, 96, 0.2);
+  --border-focus: #f4a460;
+  
+  --text-primary: #ebd9b4;
+  --text-secondary: #c98c52;
+  --text-muted: #7d5735;
+  
+  --lcd-text: #ff8c00;
+  --lcd-text-dim: rgba(255, 140, 0, 0.25);
+  --lcd-glow: 0 0 6px rgba(255, 140, 0, 0.4);
+  
+  --accent-color: #f4a460;
+  --accent-glow: 0 0 10px rgba(244, 164, 96, 0.3);
+  --folder-color: #d2691e;
+  --btn-toggle-border: rgba(244, 164, 96, 0.2);
+  --btn-toggle-active-border: #f4a460;
+  --btn-toggle-active-bg: rgba(244, 164, 96, 0.15);
+}
+
+:root {
+  --font-ui: 'Outfit', 'Noto Sans JP', sans-serif;
+  --font-digital: 'Orbitron', monospace;
+  --transition-fast: 0.1s ease;
+  --transition-normal: 0.2s ease;
+}
+
+/* ==========================================================================
+   2. 基本スタイル
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.3);
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   4. ツールバー (2段目)
+   ========================================================================== */
+
+.tool-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-color);
+  padding: 4px 12px;
+  height: 38px;
+  gap: 6px;
+}
+
+.btn-tool-icon {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-tool-icon:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+  border-color: var(--border-color);
+}
+
+.btn-tool-icon.active {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-color: var(--border-focus);
+}
+
+.btn-tool-icon .material-icons-round {
+  font-size: 18px;
+}
+
+/* Openボタン用の特別ラベル（画像の再現） */
+#btn-open-folder {
+  width: auto;
+  padding: 0 6px;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+#btn-open-folder .btn-label {
+  font-family: var(--font-ui);
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+}
+
+/* ツールバー内音量 */
+.toolbar-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.toolbar-volume .volume-icon {
+  font-size: 16px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.toolbar-volume-slider {
+  -webkit-appearance: none;
+  width: 70px;
+  height: 4px;
+  background: rgba(128, 128, 128, 0.25);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.toolbar-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+.volume-val {
+  font-size: 10.5px;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  font-weight: bold;
+  width: 32px;
+}
+
+/* テーマ選択 */
+.theme-select-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1px 4px;
+  height: 24px;
+  background-color: var(--bg-app);
+  margin-left: auto; /* 右端寄せ */
+}
+
+.theme-icon {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.theme-selector {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   5. 液晶表示パネル (3段目 - トグル式)
+   ========================================================================== */
+.lcd-panel {
+  background-color: var(--bg-lcd);
+  border-bottom: 1px solid var(--border-color);
+  height: 84px;
+  overflow: hidden;
+  transition: height var(--transition-normal);
+}
+
+.lcd-panel.hidden {
+  height: 0;
+  border-bottom: none;
+}
+
+.lcd-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr; /* 左スペアナ / 右テキスト情報 */
+  height: 84px;
+  align-items: center;
+}
+
+/* 左スペアナ */
+.lcd-left {
+  height: 100%;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+#analyzer-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 右テキスト情報 */
+.lcd-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  gap: 6px;
+  height: 100%;
+}
+
+.lcd-info-row {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-ui); /* 可読性の高い日本語・英字対応のフォントへ変更 */
+  font-size: 11.5px;
+}
+
+.lcd-info-label {
+  color: var(--lcd-text-dim);
+  width: 90px;
+  font-weight: bold;
+}
+
+.lcd-info-val {
+  color: var(--lcd-text);
+  text-shadow: var(--lcd-glow);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* 液晶内の進捗バーは廃止されました */
+
+/* ==========================================================================
+   6. 時間表示 & シークバー行 (4段目)
+   ========================================================================== */
+.timeline-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  height: 26px;
+  gap: 12px;
+  background-color: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-ui); /* 可読性の高いクリアなフォントに変更 */
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-primary);
+  width: 95px; /* フォント変更による幅の調整 */
+  flex-shrink: 0;
+}
+
+.time-separator {
+  color: var(--text-muted);
+  margin: 0 3px;
+}
+
+.timeline-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(128, 128, 128, 0.25); /* 初期グレー背景。JSから進捗色(白)をグラデーションで動的に上書き */
+  outline: none;
+  cursor: pointer;
+}
+
+.timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff; /* つまみは常に白で際立たせる */
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   7. タブバー (5段目)
+   ========================================================================== */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 8px;
+  height: 28px;
+  gap: 4px;
+}
+
+.tab-button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border-radius: 3px 3px 0 0;
+  transition: var(--transition-fast);
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background-color: rgba(128, 128, 128, 0.08);
+}
+
+.tab-button.active {
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  border-color: var(--border-color) var(--border-color) transparent var(--border-color);
+}
+
+/* 現在再生中のプレイリストタブに対する強調表示 */
+.tab-button-playlist.playing {
+  color: var(--accent-color) !important;
+  font-weight: bold;
+  position: relative;
+}
+
+.tab-button-playlist.playing::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background-color: var(--accent-color);
+  box-shadow: var(--accent-glow);
+}
+
+.tab-play-icon {
+  animation: tab-icon-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes tab-icon-pulse {
+  0% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(0.95); }
+}
+
+.btn-clear-playlist {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 1px 6px;
+  cursor: pointer;
+  margin-left: auto; /* 右寄せ */
+}
+
+/* ==========================================================================
+   8. メイン2ペインエリア (6段目 - 伸縮)
+   ========================================================================== */
+.main-content {
+  flex: 1; /* 残り高さ全て */
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  overflow: hidden; /* 子要素だけのスクロールにするため必須 */
+  background-color: var(--bg-app);
+}
+
+/* 左フォルダツリー */
+.sidebar {
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.tree-node {
+  margin-left: 10px;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+
+.tree-item:hover {
+  background: rgba(128, 128, 128, 0.06);
+}
+
+.tree-item.active {
+  background: rgba(128, 128, 128, 0.12);
+  font-weight: bold;
+}
+
+.tree-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+  color: var(--text-secondary);
+  transition: transform 0.1s;
+}
+
+.tree-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.tree-arrow .material-icons-round {
+  font-size: 10px;
+}
+
+.tree-icon {
+  margin-right: 4px;
+  font-size: 13px;
+  color: var(--folder-color);
+}
+
+.tree-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--text-muted);
+  text-align: center;
+  gap: 4px;
+}
+
+.empty-state .material-icons-round {
+  font-size: 32px;
+}
+
+.empty-state p {
+  font-size: 11px;
+}
+
+/* 右ファイルビュー */
+.file-view {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.file-view-header {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.path-display {
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.path-display .material-icons-round {
+  font-size: 12px;
+  color: var(--text-muted);
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.search-box {
+  position: relative;
+  width: 130px;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 2px 6px 2px 20px;
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: var(--border-focus);
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 極狭テーブル行間 */
+.file-list-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.file-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.file-table th {
+  padding: 2px 6px; /* 極狭行間 */
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  background: var(--bg-sidebar);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.file-table td {
+  padding: 1.5px 6px; /* 極狭行間(ダブルクリックしやすさを保ちつつ極限まで詰める) */
+  font-size: 11.5px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.04);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-table tbody tr {
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.file-table tbody tr:hover {
+  background: rgba(128, 128, 128, 0.04);
+}
+
+.file-table tbody tr.playing {
+  background: rgba(128, 128, 128, 0.1);
+  font-weight: bold;
+}
+
+.file-table tbody tr.playing td {
+  border-left: 2px solid var(--text-primary);
+}
+
+.btn-row-action {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transition: var(--transition-fast);
+}
+
+.btn-row-action:hover {
+  color: var(--text-primary);
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.btn-row-action .material-icons-round {
+  font-size: 12px;
+}
+
+.file-icon {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.no-files {
+  text-align: center;
+  padding: 16px !important;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   9. 音響効果 (FX) ポップアップ
+   ========================================================================== */
+.fx-popup {
+  position: fixed;
+  top: 70px; /* ツールバーの直下付近 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  background-color: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.fx-popup.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+  pointer-events: none;
+}
+
+.fx-popup-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fx-popup-header .title {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  color: var(--text-primary);
+}
+
+.btn-close .material-icons-round {
+  font-size: 14px;
+}
+
+.fx-popup-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fx-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fx-section-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+}
+
+.fx-section-header .material-icons-round {
+  font-size: 12px;
+}
+
+.fx-section-header .label {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.speed-control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.speed-val-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.btn-reset {
+  background: rgba(128, 128, 128, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+
+.btn-reset:hover {
+  color: var(--text-primary);
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.digital-val {
+  font-family: var(--font-ui);
+  font-weight: bold;
+  font-size: 11px;
+  color: var(--lcd-text);
+  text-shadow: var(--lcd-glow);
+}
+
+.eq-sliders-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.eq-slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.eq-slider {
+  -webkit-appearance: none;
+  appearance: slider-vertical;
+  width: 6px;
+  height: 50px;
+  background: rgba(128, 128, 128, 0.2);
+  outline: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.eq-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--text-primary);
+  cursor: pointer;
+}
+
+.eq-label {
+  font-size: 8px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.eq-val {
+  font-size: 8px;
+  font-family: var(--font-digital);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   10. 追加機能用スタイル（オレンジ枠ボタン & コンパクトモード）
+   ========================================================================== */
+
+/* トグルボタン（詳細リスト、液晶、シャッフル、ループなど）の共通テーマデザイン */
+.btn-tool-icon.toggle-btn {
+  border: 1px solid var(--btn-toggle-border);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-tool-icon.toggle-btn:hover {
+  background-color: rgba(128, 128, 128, 0.08);
+}
+
+.btn-tool-icon.toggle-btn.active {
+  border-color: var(--btn-toggle-active-border) !important;
+  background-color: var(--btn-toggle-active-bg) !important;
+}
+
+/* 最前面表示ピン留めボタンのアイコン回転効果 */
+#btn-always-on-top .material-icons-round {
+  transform: rotate(45deg);
+  transition: transform var(--transition-normal);
+}
+#btn-always-on-top.active .material-icons-round {
+  transform: rotate(0deg);
+}
+
+/* コンパクトモード（下部ビューの折りたたみ表示） */
+.compact-mode .lcd-panel,
+.compact-mode .main-content,
+.compact-mode .tab-bar {
+  display: none !important;
+}
+
+/* コンパクトモード時のツールバー要素の非表示（幅360pxに収めるための最適化） */
+.compact-mode #btn-shuffle,
+.compact-mode #btn-loop,
+.compact-mode .theme-select-container,
+.compact-mode #btn-about-toggle,
+.compact-mode .toolbar-separator {
+  display: none !important;
+}
+
+/* コンパクトモード時に音量を表示しつつ、横幅に収めるための微調整 */
+.compact-mode .tool-bar {
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.compact-mode .toolbar-volume-slider {
+  width: 55px; /* 少し縮めることで 360px 幅に確実に収める */
+}
+
+/* アプリケーションコンテナ全体の高さ制御 */
+.compact-mode .app-container {
+  height: 100vh;
+}
+
+/* ファイル選択状態のスタイル */
+.file-table tbody tr.selected {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.theme-light-mono .file-table tbody tr.selected {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+.theme-cyber .file-table tbody tr.selected {
+  background-color: rgba(0, 243, 255, 0.15) !important;
+  color: #00f3ff;
+}
+.theme-sakura .file-table tbody tr.selected {
+  background-color: rgba(255, 183, 197, 0.15) !important;
+  color: #ffb7c5;
+}
+.theme-midnight .file-table tbody tr.selected {
+  background-color: rgba(255, 215, 0, 0.15) !important;
+  color: #ffd700;
+}
+.theme-retro .file-table tbody tr.selected {
+  background-color: rgba(244, 164, 96, 0.15) !important;
+  color: #f4a460;
+}
+
+/* ツールバー内一括操作ボタン */
+.selected-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-action-primary, .btn-action-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 24px;
+  transition: var(--transition-fast);
+}
+
+.btn-action-primary {
+  background-color: var(--btn-toggle-active-bg);
+  border: 1px solid var(--btn-toggle-active-border);
+  color: var(--text-primary);
+}
+
+.btn-action-primary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-light-mono .btn-action-primary:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.btn-action-secondary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-action-secondary:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.btn-action-danger {
+  background-color: rgba(255, 82, 82, 0.1) !important;
+  border: 1px solid rgba(255, 82, 82, 0.5) !important;
+  color: #ff5252 !important;
+}
+
+.btn-action-danger:hover {
+  background-color: rgba(255, 82, 82, 0.2) !important;
+  border-color: #ff5252 !important;
+  color: #ff5252 !important;
+}
+
+/* 演奏リスト管理 (タブ並列表示化) */
+.playlist-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 60%;
+}
+
+/* スクロールバー非表示 */
+.playlist-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-button-playlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.btn-tab-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  opacity: 0.5;
+  margin-left: 2px;
+}
+
+.btn-tab-close:hover {
+  background-color: rgba(255, 82, 82, 0.15);
+  color: #ff5252;
+  opacity: 1;
+}
+
+.btn-tab-close .material-icons-round {
+  font-size: 10px;
+}
+
+.btn-tab-add {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-left: 2px;
+}
+
+.btn-tab-add:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+  background-color: rgba(128, 128, 128, 0.08);
+}
+
+.btn-tab-add .material-icons-round {
+  font-size: 12px;
+}
+
+/* 名前ソートヘッダー */
+.sortable-header {
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--transition-fast);
+}
+
+.sortable-header:hover {
+  background-color: rgba(128, 128, 128, 0.08) !important;
+}
+
+.sort-indicator {
+  display: inline-block;
+  font-size: 9px;
+  margin-left: 4px;
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+/* モーダルダイアログ (追加確認) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-content {
+  background-color: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  width: 320px;
+  overflow: hidden;
+  animation: modal-slide 0.2s ease-out;
+}
+
+@keyframes modal-slide {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(128, 128, 128, 0.04);
+}
+
+.modal-header h3 {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.modal-header .material-icons-round {
+  font-size: 16px;
+  color: var(--accent-color);
+}
+
+.modal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-body p {
+  font-size: 11px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-field label {
+  font-size: 9.5px;
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.modal-select, .modal-input {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 4px 8px;
+  outline: none;
+}
+
+.modal-select:focus, .modal-input:focus {
+  border-color: var(--border-focus);
+}
+
+.modal-field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.modal-field-checkbox label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.modal-field-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.modal-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background-color: rgba(128, 128, 128, 0.02);
+}
+
+.btn-modal {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-confirm {
+  background-color: var(--btn-toggle-active-bg);
+  border: 1px solid var(--btn-toggle-active-border);
+  color: var(--text-primary);
+}
+
+.btn-confirm:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-light-mono .btn-confirm:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-cancel:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+/* モーダルのhidden用追加 */
+.modal-overlay.hidden .modal-content {
+  animation: none;
+}
+
+/* ドラッグ＆ドロップ時のオーバーレイ */
+.drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  pointer-events: none; /* ドラッグオーバー時のイベント干渉防止 */
+}
+
+.theme-light-mono .drag-overlay {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.drag-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+}
+
+.drag-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-primary);
+  text-shadow: var(--lcd-glow);
+  text-align: center;
+}
+
+.drag-icon {
+  font-size: 64px;
+  color: var(--accent-color);
+  animation: bounce 1.5s infinite;
+}
+
+.drag-overlay-content p {
+  font-size: 14px;
+  font-weight: bold;
+  font-family: var(--font-ui);
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* トグルスイッチスタイル */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider-round {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(128, 128, 128, 0.3);
+  transition: .3s;
+  border-radius: 20px;
+}
+.slider-round:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+.switch input:checked + .slider-round {
+  background-color: var(--btn-toggle-active-border);
+}
+.switch input:checked + .slider-round:before {
+  transform: translateX(14px);
+}
+

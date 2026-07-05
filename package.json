@@ -1,0 +1,24 @@
+{
+  "name": "explayer",
+  "version": "1.0.0",
+  "description": "An Explorer-style Media Player named exPlayer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-packager . exPlayer --platform=win32 --arch=x64 --icon=src/assets/icon.ico --overwrite --out=dist && node scripts/post-build.js"
+  },
+  "keywords": [
+    "media-player",
+    "electron",
+    "explorer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "spessasynth_lib": "^4.3.7"
+  }
+}

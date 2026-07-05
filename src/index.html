@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>exPlayer</title>
+  <!-- Google Fonts: Orbitron (デジタル液晶風) と Outfit (モダンUI用) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Material Icons for crisp buttons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app-container">
+
+
+    <!-- 2. コントロールツールバー -->
+    <div class="tool-bar">
+      <!-- 再生コントロール -->
+      <button id="btn-play-pause" class="btn-tool-icon" title="再生">
+        <span class="material-icons-round" id="play-pause-icon">play_arrow</span>
+      </button>
+      <button id="btn-stop" class="btn-tool-icon" title="停止">
+        <span class="material-icons-round">stop</span>
+      </button>
+      <button id="btn-prev" class="btn-tool-icon" title="前の曲">
+        <span class="material-icons-round">skip_previous</span>
+      </button>
+      <button id="btn-next" class="btn-tool-icon" title="次の曲">
+        <span class="material-icons-round">skip_next</span>
+      </button>
+      
+      <div class="toolbar-separator"></div>
+
+      <!-- シャッフル & ループ（リピート） -->
+      <button id="btn-shuffle" class="btn-tool-icon toggle-btn" title="シャッフル">
+        <span class="material-icons-round">shuffle</span>
+      </button>
+      <button id="btn-loop" class="btn-tool-icon toggle-btn" title="ループ">
+        <span class="material-icons-round">repeat</span>
+      </button>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- 操作系トグル・設定（リピートと音量の間に移動） -->
+      <!-- プレイリストトグル (コンパクトモード切り替え) -->
+      <button id="btn-playlist-toggle" class="btn-tool-icon toggle-btn active" title="詳細リスト表示/非表示 (コンパクトモード)">
+        <span class="material-icons-round">format_list_bulleted</span>
+      </button>
+
+      <!-- 音響設定 (FX) -->
+      <button id="btn-fx-toggle" class="btn-tool-icon" title="音響設定 (EQ / 速度)">
+        <span class="material-icons-round">tune</span>
+      </button>
+
+      <!-- 液晶パネル表示/非表示（イコライザON/OFFトグル） -->
+      <button id="btn-lcd-toggle" class="btn-tool-icon toggle-btn active" title="液晶（イコライザ）表示ON/OFF">
+        <span class="material-icons-round">wysiwyg</span>
+      </button>
+
+      <!-- 常に最前面表示ON/OFF -->
+      <button id="btn-always-on-top" class="btn-tool-icon toggle-btn" title="常に最前面表示 ON/OFF">
+        <span class="material-icons-round">push_pin</span>
+      </button>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- 音量 -->
+      <div class="toolbar-volume">
+        <span class="material-icons-round volume-icon" id="volume-btn">volume_up</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="80" class="toolbar-volume-slider">
+        <span id="volume-val" class="volume-val">80%</span>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- テーマ選択 -->
+      <div class="theme-select-container">
+        <span class="material-icons-round theme-icon">palette</span>
+        <select id="theme-selector" class="theme-selector">
+          <option value="dark-mono">ダーク</option>
+          <option value="light-mono">ライト</option>
+          <option value="cyber">サイバー</option>
+          <option value="sakura">サクラ</option>
+          <option value="midnight">ミッドナイト</option>
+          <option value="retro">レトロ</option>
+        </select>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- アバウト (ℹ️) -->
+      <button id="btn-about-toggle" class="btn-tool-icon" title="exPlayerについて (著作権とライセンス)">
+        <span class="material-icons-round">info</span>
+      </button>
+    </div>
+
+    <!-- 3. 液晶表示パネル (トグル表示) -->
+    <div id="lcd-panel" class="lcd-panel">
+      <div class="lcd-grid">
+        <!-- 左：スペアナ -->
+        <div class="lcd-left">
+          <canvas id="analyzer-canvas"></canvas>
+        </div>
+        <!-- 右：曲情報（ファイルパス、タイトル、フォーマット） -->
+        <div class="lcd-right">
+          <div class="lcd-info-row">
+            <span class="lcd-info-label">ファイルパス:</span>
+            <span id="lcd-file-path" class="lcd-info-val">No Track Selected</span>
+          </div>
+          <div class="lcd-info-row">
+            <span class="lcd-info-label">タイトル:</span>
+            <span id="lcd-track-title" class="lcd-info-val">No Track Selected</span>
+          </div>
+          <div class="lcd-info-row">
+            <span class="lcd-info-label">フォーマット:</span>
+            <span id="lcd-format" class="lcd-info-val">NONE</span>
+          </div>
+          <div class="lcd-info-row">
+            <span class="lcd-info-label">再生リスト:</span>
+            <span id="lcd-playlist" class="lcd-info-val">NONE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 時間表示 & シークバー行 -->
+    <div class="timeline-row">
+      <div class="time-display">
+        <span id="lcd-current-time" class="time-val">00:00</span>
+        <span class="time-separator">/</span>
+        <span id="lcd-total-time" class="time-val">00:00</span>
+      </div>
+      <div class="timeline-container">
+        <input type="range" id="timeline-slider" min="0" max="100" value="0" class="timeline-slider">
+      </div>
+    </div>
+
+    <!-- 5. タブバー (Mediaエクスプローラ / 演奏リスト) -->
+    <div class="tab-bar">
+      <button id="tab-files" class="tab-button active">Media エクスプローラ</button>
+      
+      <!-- 動的プレイリストタブコンテナ -->
+      <div id="playlist-tabs-container" class="playlist-tabs-container"></div>
+      
+      <!-- 新規プレイリスト作成ボタン -->
+      <button id="btn-new-playlist-tab" class="btn-tab-add" title="新規演奏リストを作成">
+        <span class="material-icons-round">add</span>
+      </button>
+
+      <button id="btn-clear-playlist" class="btn-clear-playlist danger-btn" style="display: none;">演奏リストクリア</button>
+    </div>
+
+    <!-- 6. メイン表示エリア (2ペイン) -->
+    <main class="main-content">
+      <!-- 左：フォルダツリー -->
+      <aside class="sidebar">
+        <div class="tree-container" id="folder-tree">
+          <div class="empty-state">
+            <span class="material-icons-round">folder</span>
+            <p>フォルダを開いてください</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 右：ファイルリスト -->
+      <section class="file-view">
+        <div class="file-view-header">
+          <div class="path-display">
+            <span class="material-icons-round">folder</span>
+            <span id="current-path-text">フォルダ未選択</span>
+          </div>
+          <!-- 複数選択一括アクション -->
+          <div id="selected-actions" class="selected-actions" style="display: none;">
+            <button id="btn-add-selected" class="btn-action-primary" title="選択した項目を演奏リストに追加">
+              <span class="material-icons-round">playlist_add</span>
+              選択項目を追加 (<span id="selected-count">0</span>)
+            </button>
+            <button id="btn-delete-selected" class="btn-action-primary btn-action-danger" title="選択した項目を演奏リストから削除" style="display: none;">
+              <span class="material-icons-round">delete_outline</span>
+              選択項目を削除 (<span id="selected-delete-count">0</span>)
+            </button>
+            <button id="btn-clear-selection" class="btn-action-secondary" title="選択解除">
+              選択解除
+            </button>
+          </div>
+          <div class="search-box">
+            <span class="material-icons-round search-icon">search</span>
+            <input type="text" id="file-search" placeholder="検索...">
+          </div>
+        </div>
+        
+        <div class="file-list-container">
+          <table class="file-table">
+            <thead>
+              <tr>
+                <th style="width: 30px;"></th>
+                <th id="th-name" class="sortable-header" title="名前でソート">
+                  名前 <span id="sort-indicator" class="sort-indicator"></span>
+                </th>
+                <th style="width: 100px;">種類</th>
+                <th style="width: 60px; text-align: center;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="file-list-body">
+              <tr>
+                <td colspan="4" class="no-files">フォルダを開き、ファイルを選択してください。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- 音響設定 (FX) ポップアップ -->
+  <div id="fx-popup" class="fx-popup hidden">
+    <div class="fx-popup-header">
+      <span class="title">音響設定 (FX)</span>
+      <button id="btn-fx-close" class="btn-close">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+    <div class="fx-popup-body">
+      <!-- 速度調整 (ピッチ維持) -->
+      <div class="fx-section">
+        <div class="fx-section-header">
+          <span class="material-icons-round">speed</span>
+          <span class="label">再生速度 (ピッチ維持): <span id="lcd-speed-val" class="digital-val">1.00x</span></span>
+        </div>
+        <div class="speed-control-row">
+          <input type="range" id="speed-slider" min="50" max="200" value="100" class="fx-slider">
+          <div class="speed-val-row">
+            <button id="btn-reset-speed" class="btn-reset">RESET</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 3バンドイコライザー -->
+      <div class="fx-section">
+        <div class="fx-section-header">
+          <span class="material-icons-round">equalizer</span>
+          <span class="label">3バンドイコライザー</span>
+        </div>
+        <div class="eq-sliders-row">
+          <div class="eq-slider-container">
+            <input type="range" id="eq-low" min="-12" max="12" value="0" class="eq-slider" orient="vertical">
+            <span class="eq-label">LOW</span>
+            <span id="eq-low-val" class="eq-val">0dB</span>
+          </div>
+          <div class="eq-slider-container">
+            <input type="range" id="eq-mid" min="-12" max="12" value="0" class="eq-slider" orient="vertical">
+            <span class="eq-label">MID</span>
+            <span id="eq-mid-val" class="eq-val">0dB</span>
+          </div>
+          <div class="eq-slider-container">
+            <input type="range" id="eq-high" min="-12" max="12" value="0" class="eq-slider" orient="vertical">
+            <span class="eq-label">HIGH</span>
+            <span id="eq-high-val" class="eq-val">0dB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- システム設定 (ファイル関連付け) -->
+      <div class="fx-section" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+        <div class="fx-section-header">
+          <span class="material-icons-round">settings</span>
+          <span class="label">システム設定</span>
+        </div>
+        <div class="association-control-row" style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+          <span style="font-size: 10px; color: var(--text-secondary);">ファイルの関連付け (.mp3, .wav, .mid)</span>
+          <label class="switch" style="position: relative; display: inline-block; width: 34px; height: 20px;">
+            <input type="checkbox" id="chk-association" style="opacity: 0; width: 0; height: 0;">
+            <span class="slider-round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(128,128,128,0.3); transition: .4s; border-radius: 20px;"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 演奏リスト追加確認ダイアログ (モーダル) -->
+  <div id="add-confirm-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="material-icons-round">playlist_add</span>
+        <h3>演奏リストへの追加確認</h3>
+      </div>
+      <div class="modal-body">
+        <p id="add-confirm-text">選択した曲を演奏リストに追加しますか？</p>
+        
+        <div class="modal-field">
+          <label for="modal-playlist-select">追加先の演奏リストを選択：</label>
+          <select id="modal-playlist-select" class="modal-select"></select>
+        </div>
+        
+        <div class="modal-field-checkbox">
+          <input type="checkbox" id="modal-create-new-check">
+          <label for="modal-create-new-check">新しい演奏リストを作成して追加する</label>
+        </div>
+        
+        <div id="modal-new-playlist-field" class="modal-field hidden">
+          <label for="modal-new-playlist-name">新しいリスト名：</label>
+          <input type="text" id="modal-new-playlist-name" class="modal-input" placeholder="リスト名を入力...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-cancel" class="btn-modal btn-cancel">キャンセル</button>
+        <button id="btn-modal-confirm" class="btn-modal btn-confirm">追加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- アバウトポップアップ (モーダル) -->
+  <div id="about-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="width: 360px;">
+      <div class="modal-header">
+        <span class="material-icons-round" style="color: var(--accent-color);">info</span>
+        <h3>exPlayer について</h3>
+      </div>
+      <div class="modal-body" style="gap: 8px; max-height: 350px; overflow-y: auto; padding: 12px 16px;">
+        <div style="text-align: center; margin-bottom: 12px;">
+          <h4 style="font-size: 16px; font-weight: bold; color: var(--accent-color);">exPlayer v1.0.0</h4>
+          <p style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">Explorer-style Media Player</p>
+        </div>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 11.5px; line-height: 1.5; color: var(--text-primary);">
+          <p><strong>著作権:</strong></p>
+          <p style="margin-left: 8px; color: var(--text-secondary);">Copyright &copy; 2026 えんつむ (All Rights Reserved.)</p>
+          
+          <p style="margin-top: 8px;"><strong>ソフトウェアライセンス:</strong></p>
+          <p style="margin-left: 8px; color: var(--text-secondary);">本ソフトウェアの著作権は「えんつむ」に帰属します。非商用の個人利用目的において、自由に再配布・共有していただくことが可能です。</p>
+          
+          <p style="margin-top: 8px;"><strong>オープンソースライセンス情報:</strong></p>
+          <div style="margin-left: 8px; font-size: 10px; color: var(--text-muted); background: rgba(0,0,0,0.15); padding: 6px; border-radius: 4px; max-height: 100px; overflow-y: auto; font-family: monospace;">
+            - Electron (MIT License)<br>
+            - SpessaSynth (MIT License)<br>
+            - Google Fonts Outfit / Orbitron (OFL)<br>
+            - Material Icons (Apache 2.0)
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 8px 16px;">
+        <button id="btn-about-close" class="btn-modal btn-confirm" style="font-family: var(--font-ui);">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ドラッグ＆ドロップ時のオーバーレイ -->
+  <div id="drag-overlay" class="drag-overlay hidden">
+    <div class="drag-overlay-content">
+      <span class="material-icons-round drag-icon">file_download</span>
+      <p>音楽ファイルをここにドロップして演奏リストに追加</p>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
