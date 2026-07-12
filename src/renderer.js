@@ -79,6 +79,12 @@ const btnAboutToggle = document.getElementById('btn-about-toggle');
 const aboutModal = document.getElementById('about-modal');
 const btnAboutClose = document.getElementById('btn-about-close');
 
+// 新規演奏リスト作成モーダル要素
+const newPlaylistModal = document.getElementById('new-playlist-modal');
+const newPlaylistInputName = document.getElementById('new-playlist-input-name');
+const btnNewPlaylistModalCancel = document.getElementById('btn-new-playlist-modal-cancel');
+const btnNewPlaylistModalConfirm = document.getElementById('btn-new-playlist-modal-confirm');
+
 // 音声再生・Web Audio関連の状態
 let audioCtx = null;
 let audioTag = null;
@@ -285,6 +291,23 @@ function setupEventListeners() {
   }
   if (btnModalConfirm) {
     btnModalConfirm.addEventListener('click', confirmAddPendingFiles);
+  }
+
+  // 新規演奏リスト作成モーダルのイベント
+  if (btnNewPlaylistModalCancel) {
+    btnNewPlaylistModalCancel.addEventListener('click', closeNewPlaylistModal);
+  }
+  if (btnNewPlaylistModalConfirm) {
+    btnNewPlaylistModalConfirm.addEventListener('click', confirmCreateNewPlaylist);
+  }
+  if (newPlaylistInputName) {
+    newPlaylistInputName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        confirmCreateNewPlaylist();
+      } else if (e.key === 'Escape') {
+        closeNewPlaylistModal();
+      }
+    });
   }
 
   // グローバルのドラッグ終了イベント
@@ -1834,10 +1857,27 @@ function switchPlaylist(name) {
   updateFileListHighlight();
 }
 
-// 新規プレイリスト作成
+// 新規プレイリスト作成モーダルを開く
 function handleCreateNewPlaylistClick() {
-  const name = prompt("新しい演奏リスト名を入力してください：");
-  if (name === null) return;
+  if (newPlaylistModal && newPlaylistInputName) {
+    newPlaylistInputName.value = '';
+    newPlaylistModal.classList.remove('hidden');
+    setTimeout(() => newPlaylistInputName.focus(), 50);
+  }
+}
+
+// 新規プレイリスト作成モーダルを閉じる
+function closeNewPlaylistModal() {
+  if (newPlaylistModal) {
+    newPlaylistModal.classList.add('hidden');
+  }
+}
+
+// 新規プレイリスト作成の確定処理
+function confirmCreateNewPlaylist() {
+  if (!newPlaylistInputName) return;
+  
+  const name = newPlaylistInputName.value;
   const trimmed = name.trim();
   if (!trimmed) {
     alert("演奏リスト名を入力してください。");
@@ -1849,6 +1889,7 @@ function handleCreateNewPlaylistClick() {
   }
 
   playlists[trimmed] = [];
+  closeNewPlaylistModal();
   switchPlaylist(trimmed);
   switchTab('playlist'); // プレイリスト表示へ切り替え
 }

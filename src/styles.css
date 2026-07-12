@@ -175,6 +175,10 @@
   user-select: none;
 }
 
+input, textarea, select, [contenteditable="true"] {
+  user-select: text;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

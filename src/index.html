@@ -314,6 +314,26 @@
     </div>
   </div>
 
+  <!-- 新規演奏リスト作成モーダル -->
+  <div id="new-playlist-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="width: 360px;">
+      <div class="modal-header">
+        <span class="material-icons-round" style="color: var(--accent-color);">playlist_add</span>
+        <h3>新規演奏リストの作成</h3>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px;">
+        <div class="modal-field" style="margin-top: 0;">
+          <label for="new-playlist-input-name">演奏リスト名：</label>
+          <input type="text" id="new-playlist-input-name" class="modal-input" placeholder="演奏リストの名前を入力してください..." style="width: 100%; box-sizing: border-box;">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 8px 16px;">
+        <button id="btn-new-playlist-modal-cancel" class="btn-modal btn-cancel">キャンセル</button>
+        <button id="btn-new-playlist-modal-confirm" class="btn-modal btn-confirm">作成</button>
+      </div>
+    </div>
+  </div>
+
   <!-- アバウトポップアップ (モーダル) -->
   <div id="about-modal" class="modal-overlay hidden">
     <div class="modal-content" style="width: 360px;">
