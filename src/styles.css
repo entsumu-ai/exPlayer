@@ -619,6 +619,34 @@ body {
   font-size: 13px;
   color: var(--folder-color);
 }
+.btn-tree-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+  margin-left: 4px;
+}
+
+.tree-item:hover .btn-tree-add {
+  opacity: 1;
+}
+
+.btn-tree-add:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--accent-color);
+}
+
+.btn-tree-add .material-icons-round {
+  font-size: 14px;
+}
 
 .tree-label {
   white-space: nowrap;

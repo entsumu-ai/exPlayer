@@ -494,9 +494,30 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
   label.className = 'tree-label';
   label.textContent = name;
   
+  // 演奏リストに追加ボタン (ホバー時に表示)
+  const btnAdd = document.createElement('button');
+  btnAdd.className = 'btn-tree-add';
+  btnAdd.title = 'このフォルダ内のすべての曲を演奏リストに追加';
+  btnAdd.innerHTML = '<span class="material-icons-round">playlist_add</span>';
+  btnAdd.addEventListener('click', async (e) => {
+    e.stopPropagation(); // フォルダ選択やツリー展開を防ぐ
+    try {
+      const contents = await window.api.readDirectory(folderPath);
+      if (contents.files && contents.files.length > 0) {
+        showAddConfirmModal(contents.files);
+      } else {
+        alert("このフォルダ内に追加可能な音楽ファイルが見つかりませんでした。");
+      }
+    } catch (err) {
+      console.error("Failed to read folder files for adding:", err);
+      alert("フォルダの読み込みに失敗しました。");
+    }
+  });
+  
   item.appendChild(arrow);
   item.appendChild(icon);
   item.appendChild(label);
+  item.appendChild(btnAdd);
   node.appendChild(item);
   
   arrow.addEventListener('click', async (e) => {
@@ -605,9 +626,30 @@ function createSystemRootNode(name, folderPath, type) {
   label.className = 'tree-label';
   label.textContent = name;
   
+  // 演奏リストに追加ボタン (ホバー時に表示)
+  const btnAdd = document.createElement('button');
+  btnAdd.className = 'btn-tree-add';
+  btnAdd.title = 'このフォルダ内のすべての曲を演奏リストに追加';
+  btnAdd.innerHTML = '<span class="material-icons-round">playlist_add</span>';
+  btnAdd.addEventListener('click', async (e) => {
+    e.stopPropagation(); // フォルダ選択やツリー展開を防ぐ
+    try {
+      const contents = await window.api.readDirectory(folderPath);
+      if (contents.files && contents.files.length > 0) {
+        showAddConfirmModal(contents.files);
+      } else {
+        alert("このフォルダ内に追加可能な音楽ファイルが見つかりませんでした。");
+      }
+    } catch (err) {
+      console.error("Failed to read folder files for adding:", err);
+      alert("フォルダの読み込みに失敗しました。");
+    }
+  });
+  
   item.appendChild(arrow);
   item.appendChild(icon);
   item.appendChild(label);
+  item.appendChild(btnAdd);
   node.appendChild(item);
   
   arrow.addEventListener('click', async (e) => {

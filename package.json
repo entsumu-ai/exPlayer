@@ -1,6 +1,6 @@
 {
   "name": "explayer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An Explorer-style Media Player named exPlayer",
   "main": "main.js",
   "scripts": {
