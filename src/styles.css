@@ -176,7 +176,9 @@
 }
 
 input, textarea, select, [contenteditable="true"] {
-  user-select: text;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  pointer-events: auto !important;
 }
 
 ::-webkit-scrollbar {
