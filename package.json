@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-packager . exPlayer --platform=win32 --arch=x64 --icon=src/assets/icon.ico --overwrite --out=dist && node scripts/post-build.js"
+    "dist": "electron-packager . exPlayer --platform=win32 --arch=x64 --icon=src/assets/icon.ico --overwrite --out=dist --ignore=\"dist\" --ignore=\"\\.zip$\" && node scripts/post-build.js"
   },
   "keywords": [
     "media-player",
