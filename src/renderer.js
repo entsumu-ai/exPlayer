@@ -223,8 +223,9 @@ function setupEventListeners() {
   // FXポップアップトグル
   btnFxToggle.addEventListener('click', toggleFxPopup);
   btnFxClose.addEventListener('click', closeFxPopup);
-  document.addEventListener('click', (e) => {
-    if (!fxPopup.classList.contains('hidden') && 
+  // FXポップアップ外のmousedownでポップアップを即座に閉じる (ドラッグ干渉防止)
+  document.addEventListener('mousedown', (e) => {
+    if (fxPopup && !fxPopup.classList.contains('hidden') && 
         !fxPopup.contains(e.target) && 
         !btnFxToggle.contains(e.target)) {
       closeFxPopup();
@@ -1906,6 +1907,12 @@ function renderPlaylistTabs() {
     });
     
     container.appendChild(btn);
+    
+    if (isActive) {
+      setTimeout(() => {
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }, 50);
+    }
   });
 }
 
