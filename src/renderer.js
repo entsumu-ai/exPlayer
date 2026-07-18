@@ -1480,17 +1480,20 @@ function closeFxPopup() {
 }
 
 function handleVolumeChange() {
+  if (!volumeSlider) return;
   const vol = volumeSlider.value / 100;
-  volumeVal.textContent = `${volumeSlider.value}%`;
+  if (volumeVal) volumeVal.textContent = `${volumeSlider.value}%`;
   
   if (gainNode) gainNode.gain.value = vol;
   
-  if (vol === 0) {
-    volumeBtn.textContent = 'volume_off';
-  } else if (vol < 0.5) {
-    volumeBtn.textContent = 'volume_down';
-  } else {
-    volumeBtn.textContent = 'volume_up';
+  if (volumeBtn) {
+    if (vol === 0) {
+      volumeBtn.textContent = 'volume_off';
+    } else if (vol < 0.5) {
+      volumeBtn.textContent = 'volume_down';
+    } else {
+      volumeBtn.textContent = 'volume_up';
+    }
   }
   
   localStorage.setItem('explayer_volume', volumeSlider.value);
@@ -1498,6 +1501,7 @@ function handleVolumeChange() {
 }
 
 function loadSavedVolume() {
+  if (!volumeSlider) return;
   const savedVol = localStorage.getItem('explayer_volume');
   if (savedVol !== null) {
     volumeSlider.value = savedVol;
@@ -1506,14 +1510,16 @@ function loadSavedVolume() {
   }
   
   // UIの同期
-  volumeVal.textContent = `${volumeSlider.value}%`;
+  if (volumeVal) volumeVal.textContent = `${volumeSlider.value}%`;
   const vol = volumeSlider.value / 100;
-  if (vol === 0) {
-    volumeBtn.textContent = 'volume_off';
-  } else if (vol < 0.5) {
-    volumeBtn.textContent = 'volume_down';
-  } else {
-    volumeBtn.textContent = 'volume_up';
+  if (volumeBtn) {
+    if (vol === 0) {
+      volumeBtn.textContent = 'volume_off';
+    } else if (vol < 0.5) {
+      volumeBtn.textContent = 'volume_down';
+    } else {
+      volumeBtn.textContent = 'volume_up';
+    }
   }
   updateVolumeSliderBackground();
 }
@@ -1542,9 +1548,10 @@ function toggleMute() {
 }
 
 function handleSpeedChange() {
+  if (!speedSlider) return;
   const speed = speedSlider.value / 100;
-  lcdSpeedVal.textContent = `${speed.toFixed(2)}x`;
-  speedPopVal.textContent = `${speed.toFixed(2)}x`;
+  if (lcdSpeedVal) lcdSpeedVal.textContent = `${speed.toFixed(2)}x`;
+  if (speedPopVal) speedPopVal.textContent = `${speed.toFixed(2)}x`;
   
   if (audioTag) audioTag.playbackRate = speed;
   if (midiSequencer) midiSequencer.playbackRate = speed;
