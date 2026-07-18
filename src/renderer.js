@@ -335,6 +335,15 @@ function setupEventListeners() {
     }
   });
 
+  // 演奏リストタブコンテナのホイールでの横スクロールサポート
+  const playlistTabsContainer = document.getElementById('playlist-tabs-container');
+  if (playlistTabsContainer) {
+    playlistTabsContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      playlistTabsContainer.scrollLeft += e.deltaY;
+    });
+  }
+
   // 外部からのドラッグ＆ドロップイベント
   const dragOverlay = document.getElementById('drag-overlay');
   if (dragOverlay) {
@@ -1448,8 +1457,12 @@ function handleTimelineChange() {
   const seekTime = parseFloat(timelineSlider.value);
   if (midiSequencer) {
     midiSequencer.currentTime = seekTime;
+    midiSequencer.playbackRate = speedSlider.value / 100;
   } else if (audioTag) {
     audioTag.currentTime = seekTime;
+    if (speedSlider) {
+      audioTag.playbackRate = speedSlider.value / 100;
+    }
   }
   isSeeking = false;
 }

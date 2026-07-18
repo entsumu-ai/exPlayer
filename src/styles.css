@@ -1139,12 +1139,22 @@ body {
   align-items: center;
   gap: 4px;
   overflow-x: auto;
-  max-width: 60%;
+  max-width: 75%;
 }
 
-/* スクロールバー非表示 */
+/* スクロールバーの薄い表示 */
 .playlist-tabs-container::-webkit-scrollbar {
-  display: none;
+  height: 3px;
+}
+.playlist-tabs-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.playlist-tabs-container::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 1.5px;
+}
+.playlist-tabs-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.4);
 }
 
 .tab-button-playlist {
