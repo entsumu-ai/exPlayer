@@ -1497,3 +1497,8 @@ body {
   transform: translateX(14px);
 }
 
+/* 非表示のポップアップ・モーダルおよびその中のすべての要素のイベントを確実に無効化する */
+.hidden, .hidden * {
+  pointer-events: none !important;
+}
+
