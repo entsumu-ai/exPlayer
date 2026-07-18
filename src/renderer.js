@@ -445,6 +445,12 @@ function initAudioEngine() {
   // オーディオイベント
   audioTag.addEventListener('timeupdate', handleTimeUpdate);
   audioTag.addEventListener('ended', handleTrackEnded);
+  audioTag.addEventListener('play', () => {
+    if (speedSlider) audioTag.playbackRate = speedSlider.value / 100;
+  });
+  audioTag.addEventListener('loadedmetadata', () => {
+    if (speedSlider) audioTag.playbackRate = speedSlider.value / 100;
+  });
   audioTag.addEventListener('error', (e) => {
     // 停止やソース解除などのダミーの空エラーは無視する
     if (!audioTag.src || audioTag.src === window.location.href || audioTag.src.endsWith('/') || audioTag.src === 'media://load/') {
@@ -1192,14 +1198,14 @@ async function playAudio(filePath) {
     // media:// プロトコルを利用してローカルファイルを直接読み込ませる (クエリパラメータ方式)
     const mediaUrl = `media://load/?path=${encodeURIComponent(filePath)}`;
 
-    
     audioTag.src = mediaUrl;
-    audioTag.playbackRate = speedSlider.value / 100;
-    
     await audioTag.play();
+    if (speedSlider) {
+      audioTag.playbackRate = speedSlider.value / 100;
+    }
   } catch (error) {
     console.error("Play audio failed:", error);
-    lcdTrackTitle.textContent = "Playback Error";
+    if (lcdTrackTitle) lcdTrackTitle.textContent = "Playback Error";
   }
 }
 

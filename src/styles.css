@@ -426,6 +426,8 @@ body {
   gap: 12px;
   background-color: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 10;
 }
 
 .time-display {
@@ -494,6 +496,7 @@ body {
   cursor: pointer;
   border-radius: 3px 3px 0 0;
   transition: var(--transition-fast);
+  white-space: nowrap;
 }
 
 .tab-button:hover {
@@ -1149,6 +1152,7 @@ body {
   align-items: center;
   gap: 6px;
   position: relative;
+  flex-shrink: 0;
 }
 
 .btn-tab-close {
