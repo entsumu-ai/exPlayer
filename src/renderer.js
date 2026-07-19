@@ -152,6 +152,7 @@ async function init() {
   loadSavedAlwaysOnTop();
   loadSavedEQ();
   loadSavedVolume();
+  loadSavedSidebarWidth();
   initFileAssociation();
   
   // リピートモードの初期UI表示
@@ -402,6 +403,39 @@ function setupEventListeners() {
   // ファイル関連付けの切り替え
   if (chkAssociation) {
     chkAssociation.addEventListener('change', handleAssociationToggle);
+  }
+
+  // サイドバー幅可変リサイズ処理のバインド
+  const resizer = document.getElementById('sidebar-resizer');
+  const sidebar = document.querySelector('.sidebar');
+  if (resizer && sidebar) {
+    let isResizing = false;
+    
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      
+      // 最小幅 150px、最大幅 500px で制限
+      let newWidth = e.clientX;
+      if (newWidth < 150) newWidth = 150;
+      if (newWidth > 500) newWidth = 500;
+      
+      sidebar.style.width = `${newWidth}px`;
+    });
+    
+    window.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        localStorage.setItem('explayer_sidebar_width', sidebar.style.width);
+      }
+    });
   }
 }
 
@@ -1661,6 +1695,16 @@ function setLcdPanelVisibility(visible) {
 // ==========================================================================
 // 9. カラーテーマ切り替え
 // ==========================================================================
+
+function loadSavedSidebarWidth() {
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar) {
+    const savedWidth = localStorage.getItem('explayer_sidebar_width');
+    if (savedWidth !== null) {
+      sidebar.style.width = savedWidth;
+    }
+  }
+}
 
 function loadSavedTheme() {
   const theme = localStorage.getItem('explayer_theme') || 'dark-mono';
