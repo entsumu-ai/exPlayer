@@ -200,10 +200,14 @@
             <thead>
               <tr>
                 <th style="width: 30px;"></th>
-                <th id="th-name" class="sortable-header" title="名前でソート">
+                <th id="th-name" class="sortable-header resizable-th" title="名前でソート">
                   名前 <span id="sort-indicator" class="sort-indicator"></span>
+                  <div class="col-resizer" data-col="name"></div>
                 </th>
-                <th style="width: 100px;">種類</th>
+                <th id="th-type" style="width: 100px;" class="resizable-th">
+                  種類
+                  <div class="col-resizer" data-col="type"></div>
+                </th>
                 <th style="width: 60px; text-align: center;">操作</th>
               </tr>
             </thead>

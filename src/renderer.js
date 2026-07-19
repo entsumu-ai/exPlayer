@@ -153,6 +153,8 @@ async function init() {
   loadSavedEQ();
   loadSavedVolume();
   loadSavedSidebarWidth();
+  loadSavedColumnWidths();
+  loadSavedTab();
   initFileAssociation();
   
   // リピートモードの初期UI表示
@@ -437,6 +439,59 @@ function setupEventListeners() {
       }
     });
   }
+
+  // テーブル列幅リサイズ処理のバインド
+  document.querySelectorAll('.col-resizer').forEach(resizer => {
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    let targetTh = null;
+    
+    resizer.addEventListener('mousedown', (e) => {
+      e.stopPropagation(); // ソート等クリックイベントの貫通防止
+      isResizing = true;
+      startX = e.clientX;
+      targetTh = resizer.parentElement;
+      startWidth = targetTh.offsetWidth;
+      
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+      resizer.classList.add('resizing');
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      
+      const deltaX = e.clientX - startX;
+      let newWidth = startWidth + deltaX;
+      
+      // 各列ごとの幅制限
+      if (resizer.dataset.col === 'name') {
+        if (newWidth < 100) newWidth = 100;
+      } else if (resizer.dataset.col === 'type') {
+        if (newWidth < 50) newWidth = 50;
+        if (newWidth > 300) newWidth = 300;
+      }
+      
+      targetTh.style.width = `${newWidth}px`;
+    });
+    
+    window.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        resizer.classList.remove('resizing');
+        
+        // 幅設定の保存
+        if (resizer.dataset.col === 'name') {
+          localStorage.setItem('explayer_col_name_width', targetTh.style.width);
+        } else if (resizer.dataset.col === 'type') {
+          localStorage.setItem('explayer_col_type_width', targetTh.style.width);
+        }
+      }
+    });
+  });
 }
 
 // ==========================================================================
@@ -1043,6 +1098,7 @@ function handleSearch() {
 
 function switchTab(tab) {
   currentTab = tab;
+  localStorage.setItem('explayer_last_tab', tab);
   
   tabFiles.classList.toggle('active', tab === 'files');
   
@@ -1704,6 +1760,24 @@ function loadSavedSidebarWidth() {
       sidebar.style.width = savedWidth;
     }
   }
+}
+
+function loadSavedColumnWidths() {
+  const thName = document.getElementById('th-name');
+  const thType = document.getElementById('th-type');
+  if (thName) {
+    const savedWidth = localStorage.getItem('explayer_col_name_width');
+    if (savedWidth !== null) thName.style.width = savedWidth;
+  }
+  if (thType) {
+    const savedWidth = localStorage.getItem('explayer_col_type_width');
+    if (savedWidth !== null) thType.style.width = savedWidth;
+  }
+}
+
+function loadSavedTab() {
+  const savedTab = localStorage.getItem('explayer_last_tab') || 'files';
+  switchTab(savedTab);
 }
 
 function loadSavedTheme() {

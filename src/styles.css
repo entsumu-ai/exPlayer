@@ -748,6 +748,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  table-layout: fixed;
 }
 
 .file-table th {
@@ -1512,5 +1513,26 @@ body {
 }
 
 .sidebar-resizer:hover {
+  background-color: var(--btn-toggle-active-border);
+}
+
+/* テーブル列幅リサイザー */
+.resizable-th {
+  position: relative;
+}
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 5;
+  background-color: transparent;
+}
+
+.col-resizer:hover, .col-resizer.resizing {
   background-color: var(--btn-toggle-active-border);
 }
