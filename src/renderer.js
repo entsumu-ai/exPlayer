@@ -678,8 +678,8 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
   return node;
 }
 
-function selectFolder(folderPath, folders, files) {
-  currentPathText.textContent = folderPath;
+function selectFolder(folderPath, folders, files, skipTabSwitch = false) {
+  if (currentPathText) currentPathText.textContent = folderPath;
   currentFolderFiles = files;
   
   // 選択状態をクリア
@@ -688,11 +688,17 @@ function selectFolder(folderPath, folders, files) {
   // 前回開いていたフォルダパスを保存
   localStorage.setItem('explayer_last_folder', folderPath);
   
-  // プレイリストタブを開いている場合でもエクスプローラ表示に強制切り替え
-  if (currentTab !== 'files') {
-    switchTab('files');
+  if (skipTabSwitch) {
+    if (currentTab === 'files') {
+      renderFileList(files);
+    }
   } else {
-    renderFileList(files);
+    // プレイリストタブを開いている場合でもエクスプローラ表示に強制切り替え
+    if (currentTab !== 'files') {
+      switchTab('files');
+    } else {
+      renderFileList(files);
+    }
   }
 }
 
@@ -818,7 +824,7 @@ async function restoreLastFolder() {
     try {
       // 1. ファイルリストのロード
       const contents = await window.api.readDirectory(lastFolder);
-      selectFolder(lastFolder, contents.folders, contents.files);
+      selectFolder(lastFolder, contents.folders, contents.files, true);
       
       // 2. フォルダツリーを該当パスまで自動的に展開
       setTimeout(async () => {
