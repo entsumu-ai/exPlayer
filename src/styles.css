@@ -688,12 +688,7 @@ body {
 }
 
 .file-view-header {
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+  display: none !important;
 }
 
 .path-display {
