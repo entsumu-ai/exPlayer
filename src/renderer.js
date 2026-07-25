@@ -39,6 +39,7 @@ const btnNext = document.getElementById('btn-next');
 const btnShuffle = document.getElementById('btn-shuffle');
 const btnLoop = document.getElementById('btn-loop');
 const timelineSlider = document.getElementById('timeline-slider');
+const timelineTooltip = document.getElementById('timeline-tooltip');
 const volumeSlider = document.getElementById('volume-slider');
 const volumeBtn = document.getElementById('volume-btn');
 const volumeVal = document.getElementById('volume-val');
@@ -212,6 +213,26 @@ function setupEventListeners() {
   // タイムラインシーク
   timelineSlider.addEventListener('input', handleTimelineInput);
   timelineSlider.addEventListener('change', handleTimelineChange);
+  
+  const timelineContainer = document.querySelector('.timeline-container');
+  if (timelineContainer && timelineTooltip && timelineSlider) {
+    timelineContainer.addEventListener('mousemove', (e) => {
+      const rect = timelineContainer.getBoundingClientRect();
+      if (rect.width <= 0) return;
+      const offsetX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      const percent = offsetX / rect.width;
+      const maxTime = parseFloat(timelineSlider.max) || 0;
+      const hoverTime = percent * maxTime;
+      
+      timelineTooltip.textContent = formatTime(hoverTime);
+      timelineTooltip.style.left = `${offsetX}px`;
+      timelineTooltip.classList.add('visible');
+    });
+    
+    timelineContainer.addEventListener('mouseleave', () => {
+      timelineTooltip.classList.remove('visible');
+    });
+  }
   
   // 速度とEQ
   speedSlider.addEventListener('input', handleSpeedChange);
@@ -1851,6 +1872,8 @@ function drawEmptyAnalyzer() {
   canvasCtx.stroke();
 }
 
+let peakValues = []; // ピークメーターの物理減衰保存用
+
 function startVisualizer() {
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
@@ -1894,7 +1917,7 @@ function startVisualizer() {
       canvasCtx.stroke();
     }
     
-    // 影の設定 (ループの外側で1回だけ設定することでCPU/GPU負荷を激減させる)
+    // 影の設定
     if (!isLight) {
       canvasCtx.shadowBlur = 3;
       if (theme.includes('cyber')) {
@@ -1917,9 +1940,19 @@ function startVisualizer() {
     let barHeight;
     let x = 0;
     
+    if (peakValues.length !== bufferLength) {
+      peakValues = new Array(bufferLength).fill(0);
+    }
+    
     for (let i = 0; i < bufferLength; i++) {
       barHeight = (dataArray[i] / 255) * (height - 10);
       if (barHeight < 1) barHeight = 1;
+      
+      if (barHeight > peakValues[i]) {
+        peakValues[i] = barHeight;
+      } else {
+        peakValues[i] = Math.max(1, peakValues[i] - 0.75);
+      }
       
       const gradient = canvasCtx.createLinearGradient(0, height, 0, height - barHeight);
       
@@ -1950,9 +1983,14 @@ function startVisualizer() {
       }
       
       canvasCtx.fillStyle = gradient;
-      
       const barY = height - barHeight - 3;
       drawRoundedRect(canvasCtx, x, barY, barWidth - 1.5, barHeight, 1.5);
+      
+      if (peakValues[i] > 2) {
+        const peakY = height - peakValues[i] - 5;
+        canvasCtx.fillStyle = isLight ? 'rgba(0, 0, 0, 0.9)' : '#ffffff';
+        canvasCtx.fillRect(x, peakY, barWidth - 1.5, 1.5);
+      }
       
       x += barWidth + 0.5;
     }

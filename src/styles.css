@@ -239,16 +239,23 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn-tool-icon:hover {
-  background-color: rgba(128, 128, 128, 0.15);
+  background-color: rgba(128, 128, 128, 0.18);
   border-color: var(--border-color);
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-tool-icon:active {
+  transform: translateY(0) scale(0.96);
+  box-shadow: none;
 }
 
 .btn-tool-icon.active {
-  background-color: rgba(128, 128, 128, 0.2);
+  background-color: rgba(128, 128, 128, 0.25);
   border-color: var(--border-focus);
 }
 
@@ -450,26 +457,68 @@ body {
   flex: 1;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .timeline-slider {
   -webkit-appearance: none;
   width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(128, 128, 128, 0.25); /* 初期グレー背景。JSから進捗色(白)をグラデーションで動的に上書き */
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(128, 128, 128, 0.25);
   outline: none;
   cursor: pointer;
+  transition: height 0.15s ease, background 0.15s ease;
+}
+
+.timeline-container:hover .timeline-slider {
+  height: 7px;
 }
 
 .timeline-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #ffffff; /* つまみは常に白で際立たせる */
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
   cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
+}
+
+.timeline-container:hover .timeline-slider::-webkit-slider-thumb {
+  transform: scale(1.3);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+}
+
+/* シークバーホバー浮遊ツールチップ */
+.timeline-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  transform: translateX(-50%) translateY(-6px);
+  background: rgba(20, 20, 25, 0.92);
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-focus, rgba(255, 255, 255, 0.3));
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+}
+
+.timeline-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-10px);
 }
 
 /* ==========================================================================
@@ -784,12 +833,30 @@ body {
 }
 
 .file-table tbody tr.playing {
-  background: rgba(128, 128, 128, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   font-weight: bold;
+  transition: background 0.2s ease;
 }
 
 .file-table tbody tr.playing td {
-  border-left: 2px solid var(--text-primary);
+  border-left: 3px solid var(--accent-color, #ff5252);
+  color: var(--accent-color, #ff5252);
+}
+
+.file-table tbody tr.playing td .material-icons-round {
+  color: var(--accent-color, #ff5252);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.92);
+  }
 }
 
 .btn-row-action {
