@@ -1474,11 +1474,7 @@ function handleNextTrack() {
 }
 
 function handlePlayPause() {
-  if (currentTrackIndex === -1 && playlist.length > 0) {
-    playTrack(0);
-    return;
-  }
-  
+  // MIDIシーケンサーの場合
   if (midiSequencer) {
     if (isPlaying) {
       midiSequencer.pause();
@@ -1487,15 +1483,45 @@ function handlePlayPause() {
       midiSequencer.play();
       setPlayingState(true);
     }
-  } else if (audioTag) {
-    if (isPlaying) {
-      audioTag.pause();
-      setPlayingState(false);
-    } else {
-      audioTag.play();
-      setPlayingState(true);
-    }
+    return;
   }
+  
+  // オーディオタグで再生中の場合 -> 一時停止
+  if (audioTag && isPlaying) {
+    audioTag.pause();
+    setPlayingState(false);
+    return;
+  }
+
+  // オーディオタグで一時停止中（ソースが存在する）の場合 -> 一時停止解除
+  if (audioTag && audioTag.src && audioTag.src !== window.location.href && !audioTag.src.endsWith('/') && audioTag.readyState >= 1) {
+    audioTag.play().then(() => {
+      setPlayingState(true);
+    }).catch(err => {
+      console.warn("Resume play failed, restarting track:", err);
+      playCurrentOrSelectedTrack();
+    });
+    return;
+  }
+
+  // 停止状態（ソースがクリアされている場合など） -> 選択中のトラックまたは現在のトラックを新規再生
+  playCurrentOrSelectedTrack();
+}
+
+function playCurrentOrSelectedTrack() {
+  const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
+  if (!currentList || currentList.length === 0) return;
+  
+  let targetIndex = -1;
+  if (selectedIndices && selectedIndices.length > 0) {
+    targetIndex = selectedIndices[0];
+  } else if (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) {
+    targetIndex = currentTrackIndex;
+  } else {
+    targetIndex = 0;
+  }
+  
+  playTrack(targetIndex);
 }
 
 function handleStop() {
