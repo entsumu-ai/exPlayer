@@ -1,9 +1,9 @@
-// グローバルエラーキャッチャー（デバッグ用アラート）
+// グローバルエラーキャッチャー（ログ出力のみ）
 window.addEventListener('error', (event) => {
-  alert(`JS Error: ${event.message}\nAt: ${event.filename}:${event.lineno}`);
+  console.error(`JS Error: ${event.message} at ${event.filename}:${event.lineno}`);
 });
 window.addEventListener('unhandledrejection', (event) => {
-  alert(`Promise Rejection: ${event.reason}`);
+  console.warn(`Unhandled Promise Rejection:`, event.reason);
 });
 
 // HTML要素の参照
@@ -1293,7 +1293,10 @@ async function playTrack(index) {
 function stopCurrentPlayback() {
   if (audioTag) {
     audioTag.pause();
-    audioTag.src = '';
+    audioTag.removeAttribute('src');
+    try {
+      audioTag.load();
+    } catch (e) {}
   }
   
   if (midiSequencer) {
@@ -1331,8 +1334,10 @@ async function playAudio(filePath) {
       audioTag.playbackRate = speedSlider.value / 100;
     }
   } catch (error) {
-    console.error("Play audio failed:", error);
-    if (lcdTrackTitle) lcdTrackTitle.textContent = "Playback Error";
+    console.warn("Play audio failed:", error);
+    if (error && error.name !== 'AbortError') {
+      if (lcdTrackTitle) lcdTrackTitle.textContent = "再生エラー";
+    }
   }
 }
 
