@@ -37,8 +37,10 @@ if (window.api) {
     if (state.currentTimeStr) tbCurrentTime.textContent = state.currentTimeStr;
     if (state.totalTimeStr) tbTotalTime.textContent = state.totalTimeStr;
     
-    if (typeof state.progress === 'number') {
-      tbProgressFill.style.width = `${Math.min(100, Math.max(0, state.progress * 100))}%`;
+    if (typeof state.progress === 'number' && !isUserSeeking) {
+      const pct = Math.min(100, Math.max(0, state.progress * 100));
+      tbProgressFill.style.width = `${pct}%`;
+      if (tbSlider) tbSlider.value = pct;
     }
     
     if (typeof state.isPlaying === 'boolean') {
@@ -47,3 +49,31 @@ if (window.api) {
     }
   });
 }
+
+// シーク操作
+const tbSlider = document.getElementById('tb-timeline-slider');
+let isUserSeeking = false;
+
+if (tbSlider) {
+  tbSlider.addEventListener('input', (e) => {
+    isUserSeeking = true;
+    const val = parseFloat(e.target.value);
+    tbProgressFill.style.width = `${val}%`;
+  });
+
+  tbSlider.addEventListener('change', (e) => {
+    isUserSeeking = false;
+    const val = parseFloat(e.target.value);
+    if (window.api && window.api.seekToPercent) {
+      window.api.seekToPercent(val / 100);
+    }
+  });
+}
+
+// マウスホイールでの音量操作
+document.addEventListener('wheel', (e) => {
+  if (window.api && window.api.adjustVolume) {
+    const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    window.api.adjustVolume(delta);
+  }
+}, { passive: true });

@@ -475,6 +475,34 @@ function setupEventListeners() {
     });
   }
 
+  // 外部(Flyout/Taskbar Mini Bar)からのシーク位置変更信号の受信
+  if (window.api && window.api.onSeekPercent) {
+    window.api.onSeekPercent((percent) => {
+      const duration = (audioTag && audioTag.duration) ? audioTag.duration : (timelineSlider ? parseFloat(timelineSlider.max) : 0);
+      if (duration > 0) {
+        const targetTime = duration * percent;
+        if (audioTag) audioTag.currentTime = targetTime;
+        if (timelineSlider) timelineSlider.value = Math.floor(targetTime);
+      }
+    });
+  }
+
+  // 外部(Flyout/Taskbar Mini Bar)からの音量調整信号の受信
+  if (window.api && window.api.onAdjustVolume) {
+    window.api.onAdjustVolume((delta) => {
+      adjustVolumeByDelta(delta);
+    });
+  }
+
+  // アプリ全体でのマウスホイール音量操作
+  document.addEventListener('wheel', (e) => {
+    const isScrollableList = e.target.closest('.file-table-wrapper, .sidebar-content, .playlist-scroll');
+    if (!isScrollableList) {
+      const delta = e.deltaY < 0 ? 0.05 : -0.05;
+      adjustVolumeByDelta(delta);
+    }
+  }, { passive: true });
+
   // サイドバー幅可変リサイズ処理のバインド
   const resizer = document.getElementById('sidebar-resizer');
   const sidebar = document.querySelector('.sidebar');

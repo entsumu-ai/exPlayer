@@ -25,5 +25,9 @@ contextBridge.exposeInMainWorld('api', {
   sendTaskbarBarControl: (action) => ipcRenderer.send('taskbar-bar:control', action),
   updateTaskbarBarState: (state) => ipcRenderer.send('taskbar-bar:update-state', state),
   onUpdateTaskbarBarState: (callback) => ipcRenderer.on('taskbar-bar:state-changed', (event, state) => callback(state)),
-  onTaskbarBarControl: (callback) => ipcRenderer.on('taskbar-bar:control-received', (event, action) => callback(action))
+  onTaskbarBarControl: (callback) => ipcRenderer.on('taskbar-bar:control-received', (event, action) => callback(action)),
+  seekToPercent: (percent) => ipcRenderer.send('player:seek-percent', percent),
+  adjustVolume: (delta) => ipcRenderer.send('player:adjust-volume', delta),
+  onSeekPercent: (callback) => ipcRenderer.on('player:seek-percent-received', (event, percent) => callback(percent)),
+  onAdjustVolume: (callback) => ipcRenderer.on('player:adjust-volume-received', (event, delta) => callback(delta))
 });

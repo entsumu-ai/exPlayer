@@ -783,3 +783,15 @@ ipcMain.on('taskbar-bar:update-state', (event, state) => {
   }
 });
 
+ipcMain.on('player:seek-percent', (event, percent) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('player:seek-percent-received', percent);
+  }
+});
+
+ipcMain.on('player:adjust-volume', (event, delta) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('player:adjust-volume-received', delta);
+  }
+});
+
