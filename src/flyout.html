@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>exPlayer Fluent Flyout</title>
+  <link rel="stylesheet" href="flyout.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@500;700&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="flyout-card">
+    <!-- ヘッダー（タイトル・閉じる/本体展開ボタン） -->
+    <div class="flyout-header">
+      <div class="flyout-brand">
+        <span class="material-icons-round brand-icon">graphic_eq</span>
+        <span class="brand-name">exPlayer Flyout</span>
+      </div>
+      <div class="flyout-header-actions">
+        <button id="btn-show-main" class="icon-btn" title="メイン画面を開く">
+          <span class="material-icons-round">open_in_full</span>
+        </button>
+        <button id="btn-close-flyout" class="icon-btn" title="閉じる">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- トラック情報＆ジャケットエリア -->
+    <div class="track-info-section">
+      <div class="artwork-box">
+        <span class="material-icons-round artwork-icon" id="flyout-art-icon">music_note</span>
+      </div>
+      <div class="track-details">
+        <div class="track-title-wrapper">
+          <div id="flyout-track-title" class="track-title">曲が選択されていません</div>
+        </div>
+        <div id="flyout-playlist-name" class="playlist-subtitle">No Playlist</div>
+      </div>
+    </div>
+
+    <!-- シークバー＆時間表示 -->
+    <div class="timeline-section">
+      <div class="timeline-slider-wrapper">
+        <div id="flyout-progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+      <div class="time-labels">
+        <span id="flyout-current-time">00:00</span>
+        <span id="flyout-total-time">00:00</span>
+      </div>
+    </div>
+
+    <!-- コントロールボタン群 -->
+    <div class="controls-section">
+      <button id="flyout-btn-prev" class="control-btn" title="前の曲">
+        <span class="material-icons-round">skip_previous</span>
+      </button>
+      <button id="flyout-btn-play" class="control-btn play-btn" title="再生 / 一時停止">
+        <span class="material-icons-round" id="flyout-play-icon">play_arrow</span>
+      </button>
+      <button id="flyout-btn-next" class="control-btn" title="次の曲">
+        <span class="material-icons-round">skip_next</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="flyout.js"></script>
+</body>
+</html>

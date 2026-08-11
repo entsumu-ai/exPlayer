@@ -12,5 +12,12 @@ contextBridge.exposeInMainWorld('api', {
   onOpenFile: (callback) => ipcRenderer.on('open-file', (event, filePath) => callback(filePath)),
   updateThumbarState: (isPlaying) => ipcRenderer.send('thumbar:update-state', isPlaying),
   setProgressBar: (progress) => ipcRenderer.send('thumbar:set-progress', progress),
-  onThumbarAction: (callback) => ipcRenderer.on('thumbar:action', (event, action) => callback(action))
+  onThumbarAction: (callback) => ipcRenderer.on('thumbar:action', (event, action) => callback(action)),
+  showMainWindow: () => ipcRenderer.send('flyout:show-main'),
+  hideFlyoutWindow: () => ipcRenderer.send('flyout:hide'),
+  toggleFlyoutWindow: () => ipcRenderer.send('flyout:toggle'),
+  sendFlyoutControl: (action) => ipcRenderer.send('flyout:control', action),
+  updateFlyoutState: (state) => ipcRenderer.send('flyout:update-state', state),
+  onUpdateFlyoutState: (callback) => ipcRenderer.on('flyout:state-changed', (event, state) => callback(state)),
+  onFlyoutControl: (callback) => ipcRenderer.on('flyout:control-received', (event, action) => callback(action))
 });

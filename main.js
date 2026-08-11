@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Tray, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -243,6 +243,8 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+  createFlyoutWindow();
+  createTray();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -561,5 +563,116 @@ ipcMain.on('thumbar:set-progress', (event, progress) => {
       mainWindow.setProgressBar(-1);
     }
   } catch (e) {}
+});
+
+// Fluent Flyout ミニウィンドウ & トレイ関連の処理
+let flyoutWindow = null;
+let tray = null;
+
+function createFlyoutWindow() {
+  flyoutWindow = new BrowserWindow({
+    width: 336,
+    height: 196,
+    show: false,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  flyoutWindow.loadFile(path.join(__dirname, 'src', 'flyout.html'));
+
+  flyoutWindow.on('blur', () => {
+    if (flyoutWindow && !flyoutWindow.isDestroyed()) {
+      flyoutWindow.hide();
+    }
+  });
+}
+
+function createTray() {
+  try {
+    const iconPath = path.join(__dirname, 'src', 'assets', 'icon.png');
+    tray = new Tray(iconPath);
+    tray.setToolTip('exPlayer Fluent Flyout Mini');
+
+    tray.on('click', (event, bounds) => {
+      toggleFlyoutWindow(bounds);
+    });
+  } catch (e) {
+    console.error('Failed to create tray:', e);
+  }
+}
+
+function toggleFlyoutWindow(bounds) {
+  if (!flyoutWindow) return;
+  
+  if (flyoutWindow.isVisible()) {
+    flyoutWindow.hide();
+    return;
+  }
+
+  const flyoutBounds = flyoutWindow.getBounds();
+  let x = 0;
+  let y = 0;
+
+  if (bounds) {
+    const display = screen.getDisplayMatching(bounds);
+    const workArea = display.workArea;
+
+    x = Math.round(bounds.x + (bounds.width / 2) - (flyoutBounds.width / 2));
+    y = Math.round(bounds.y - flyoutBounds.height - 6);
+
+    if (x < workArea.x) x = workArea.x + 8;
+    if (x + flyoutBounds.width > workArea.x + workArea.width) {
+      x = workArea.x + workArea.width - flyoutBounds.width - 8;
+    }
+    if (y < workArea.y) {
+      y = bounds.y + bounds.height + 6;
+    }
+  } else if (mainWindow) {
+    const mainBounds = mainWindow.getBounds();
+    x = mainBounds.x + mainBounds.width - flyoutBounds.width - 20;
+    y = mainBounds.y + 40;
+  }
+
+  flyoutWindow.setPosition(x, y);
+  flyoutWindow.show();
+  flyoutWindow.focus();
+}
+
+ipcMain.on('flyout:show-main', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  }
+});
+
+ipcMain.on('flyout:hide', () => {
+  if (flyoutWindow && !flyoutWindow.isDestroyed()) {
+    flyoutWindow.hide();
+  }
+});
+
+ipcMain.on('flyout:toggle', () => {
+  toggleFlyoutWindow();
+});
+
+ipcMain.on('flyout:control', (event, action) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('flyout:control-received', action);
+  }
+});
+
+ipcMain.on('flyout:update-state', (event, state) => {
+  if (flyoutWindow && !flyoutWindow.isDestroyed()) {
+    flyoutWindow.webContents.send('flyout:state-changed', state);
+  }
 });
 

@@ -437,6 +437,25 @@ function setupEventListeners() {
     });
   }
 
+  // Fluent Flyout トグルボタン
+  const btnFlyoutToggle = document.getElementById('btn-flyout-toggle');
+  if (btnFlyoutToggle) {
+    btnFlyoutToggle.addEventListener('click', () => {
+      if (window.api && window.api.toggleFlyoutWindow) {
+        window.api.toggleFlyoutWindow();
+      }
+    });
+  }
+
+  // Flyoutからの操作の受信
+  if (window.api && window.api.onFlyoutControl) {
+    window.api.onFlyoutControl((action) => {
+      if (action === 'prev') handlePrevTrack();
+      else if (action === 'play-pause') handlePlayPause();
+      else if (action === 'next') handleNextTrack();
+    });
+  }
+
   // サイドバー幅可変リサイズ処理のバインド
   const resizer = document.getElementById('sidebar-resizer');
   const sidebar = document.querySelector('.sidebar');
@@ -1290,6 +1309,7 @@ async function playTrack(index) {
   const fileExtension = track.ext.toLowerCase();
   
   updateMediaSession(track);
+  syncFlyoutState();
 
   if (fileExtension === '.mid' || fileExtension === '.midi') {
     await playMidi(track.path);
@@ -1444,6 +1464,7 @@ function handleTimeUpdate() {
   if (window.api && window.api.setProgressBar && total > 0) {
     window.api.setProgressBar(current / total);
   }
+  syncFlyoutState();
 }
 
 function handleTrackEnded() {
@@ -1558,6 +1579,27 @@ function setPlayingState(playing) {
   }
   if (!playing && window.api && window.api.setProgressBar) {
     window.api.setProgressBar(-1);
+  }
+  syncFlyoutState();
+}
+
+function syncFlyoutState() {
+  if (window.api && window.api.updateFlyoutState) {
+    const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
+    const currentTrack = (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) ? currentList[currentTrackIndex] : null;
+    
+    const max = parseFloat(timelineSlider.max) || 0;
+    const val = parseFloat(timelineSlider.value) || 0;
+    const progress = max > 0 ? (val / max) : 0;
+    
+    window.api.updateFlyoutState({
+      title: currentTrack ? currentTrack.name : '曲が選択されていません',
+      playlist: playingPlaylistName || 'なし',
+      currentTimeStr: lcdCurrentTime ? lcdCurrentTime.textContent : '00:00',
+      totalTimeStr: lcdTotalTime ? lcdTotalTime.textContent : '00:00',
+      progress: progress,
+      isPlaying: isPlaying
+    });
   }
 }
 
