@@ -456,6 +456,25 @@ function setupEventListeners() {
     });
   }
 
+  // タスクバー空き領域ミニバー トグルボタン
+  const btnTaskbarBarToggle = document.getElementById('btn-taskbar-bar-toggle');
+  if (btnTaskbarBarToggle) {
+    btnTaskbarBarToggle.addEventListener('click', () => {
+      if (window.api && window.api.toggleTaskbarBarWindow) {
+        window.api.toggleTaskbarBarWindow();
+      }
+    });
+  }
+
+  // Taskbar Mini Barからの操作の受信
+  if (window.api && window.api.onTaskbarBarControl) {
+    window.api.onTaskbarBarControl((action) => {
+      if (action === 'prev') handlePrevTrack();
+      else if (action === 'play-pause') handlePlayPause();
+      else if (action === 'next') handleNextTrack();
+    });
+  }
+
   // サイドバー幅可変リサイズ処理のバインド
   const resizer = document.getElementById('sidebar-resizer');
   const sidebar = document.querySelector('.sidebar');
@@ -1584,22 +1603,27 @@ function setPlayingState(playing) {
 }
 
 function syncFlyoutState() {
+  const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
+  const currentTrack = (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) ? currentList[currentTrackIndex] : null;
+  
+  const max = parseFloat(timelineSlider.max) || 0;
+  const val = parseFloat(timelineSlider.value) || 0;
+  const progress = max > 0 ? (val / max) : 0;
+  
+  const payload = {
+    title: currentTrack ? currentTrack.name : '曲が選択されていません',
+    playlist: playingPlaylistName || 'なし',
+    currentTimeStr: lcdCurrentTime ? lcdCurrentTime.textContent : '00:00',
+    totalTimeStr: lcdTotalTime ? lcdTotalTime.textContent : '00:00',
+    progress: progress,
+    isPlaying: isPlaying
+  };
+
   if (window.api && window.api.updateFlyoutState) {
-    const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
-    const currentTrack = (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) ? currentList[currentTrackIndex] : null;
-    
-    const max = parseFloat(timelineSlider.max) || 0;
-    const val = parseFloat(timelineSlider.value) || 0;
-    const progress = max > 0 ? (val / max) : 0;
-    
-    window.api.updateFlyoutState({
-      title: currentTrack ? currentTrack.name : '曲が選択されていません',
-      playlist: playingPlaylistName || 'なし',
-      currentTimeStr: lcdCurrentTime ? lcdCurrentTime.textContent : '00:00',
-      totalTimeStr: lcdTotalTime ? lcdTotalTime.textContent : '00:00',
-      progress: progress,
-      isPlaying: isPlaying
-    });
+    window.api.updateFlyoutState(payload);
+  }
+  if (window.api && window.api.updateTaskbarBarState) {
+    window.api.updateTaskbarBarState(payload);
   }
 }
 

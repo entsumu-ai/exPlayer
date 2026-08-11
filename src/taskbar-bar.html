@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>exPlayer Taskbar Mini Bar</title>
+  <link rel="stylesheet" href="taskbar-bar.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Outfit:wght@600;700&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="taskbar-bar-container">
+    <!-- ドラッグ移動用ハンドル -->
+    <div class="drag-handle" title="ドラッグしてタスクバーの空き領域へ移動">
+      <span class="material-icons-round drag-icon">drag_indicator</span>
+    </div>
+
+    <!-- トラックアイコン＆タイトル -->
+    <div class="track-section">
+      <span class="material-icons-round music-icon">music_note</span>
+      <div class="title-overflow">
+        <span id="tb-track-title" class="track-title">曲が選択されていません</span>
+      </div>
+    </div>
+
+    <!-- 再生進捗プログレスバー＆時間 -->
+    <div class="progress-section">
+      <span id="tb-current-time" class="time-val">00:00</span>
+      <div class="bar-wrapper">
+        <div id="tb-progress-fill" class="bar-fill" style="width: 0%;"></div>
+      </div>
+      <span id="tb-total-time" class="time-val">00:00</span>
+    </div>
+
+    <!-- 再生コントロールボタン -->
+    <div class="controls-section">
+      <button id="tb-btn-prev" class="control-btn" title="前の曲">
+        <span class="material-icons-round">skip_previous</span>
+      </button>
+      <button id="tb-btn-play" class="control-btn play-btn" title="再生 / 一時停止">
+        <span class="material-icons-round" id="tb-play-icon">play_arrow</span>
+      </button>
+      <button id="tb-btn-next" class="control-btn" title="次の曲">
+        <span class="material-icons-round">skip_next</span>
+      </button>
+    </div>
+
+    <!-- 操作・展開ボタン -->
+    <div class="actions-section">
+      <button id="tb-btn-main" class="action-btn" title="メイン画面を開く">
+        <span class="material-icons-round">open_in_full</span>
+      </button>
+      <button id="tb-btn-close" class="action-btn" title="閉じる">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="taskbar-bar.js"></script>
+</body>
+</html>

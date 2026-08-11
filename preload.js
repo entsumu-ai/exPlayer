@@ -19,5 +19,11 @@ contextBridge.exposeInMainWorld('api', {
   sendFlyoutControl: (action) => ipcRenderer.send('flyout:control', action),
   updateFlyoutState: (state) => ipcRenderer.send('flyout:update-state', state),
   onUpdateFlyoutState: (callback) => ipcRenderer.on('flyout:state-changed', (event, state) => callback(state)),
-  onFlyoutControl: (callback) => ipcRenderer.on('flyout:control-received', (event, action) => callback(action))
+  onFlyoutControl: (callback) => ipcRenderer.on('flyout:control-received', (event, action) => callback(action)),
+  toggleTaskbarBarWindow: () => ipcRenderer.send('taskbar-bar:toggle'),
+  hideTaskbarBarWindow: () => ipcRenderer.send('taskbar-bar:hide'),
+  sendTaskbarBarControl: (action) => ipcRenderer.send('taskbar-bar:control', action),
+  updateTaskbarBarState: (state) => ipcRenderer.send('taskbar-bar:update-state', state),
+  onUpdateTaskbarBarState: (callback) => ipcRenderer.on('taskbar-bar:state-changed', (event, state) => callback(state)),
+  onTaskbarBarControl: (callback) => ipcRenderer.on('taskbar-bar:control-received', (event, action) => callback(action))
 });

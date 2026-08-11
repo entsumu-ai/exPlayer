@@ -244,6 +244,7 @@ app.whenReady().then(() => {
 
   createWindow();
   createFlyoutWindow();
+  createTaskbarBarWindow();
   createTray();
 
   app.on('activate', () => {
@@ -673,6 +674,78 @@ ipcMain.on('flyout:control', (event, action) => {
 ipcMain.on('flyout:update-state', (event, state) => {
   if (flyoutWindow && !flyoutWindow.isDestroyed()) {
     flyoutWindow.webContents.send('flyout:state-changed', state);
+  }
+});
+
+// タスクバー空き領域用 Taskbar Inline Mini Bar 関連処理
+let taskbarBarWindow = null;
+
+function createTaskbarBarWindow() {
+  taskbarBarWindow = new BrowserWindow({
+    width: 480,
+    height: 36,
+    show: false,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  taskbarBarWindow.loadFile(path.join(__dirname, 'src', 'taskbar-bar.html'));
+}
+
+function toggleTaskbarBarWindow() {
+  if (!taskbarBarWindow) return;
+  
+  if (taskbarBarWindow.isVisible()) {
+    taskbarBarWindow.hide();
+    return;
+  }
+
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const workArea = primaryDisplay.workArea;
+  const bounds = primaryDisplay.bounds;
+
+  const barWidth = 480;
+  const barHeight = 36;
+
+  // タスクバーの空き領域（ピン留めアイコンの右側スペース）に配置
+  let x = Math.round(workArea.x + (workArea.width / 2) + 60);
+  let y = Math.round(bounds.height - barHeight - 4);
+
+  if (x + barWidth > bounds.width) {
+    x = bounds.width - barWidth - 120;
+  }
+
+  taskbarBarWindow.setPosition(x, y);
+  taskbarBarWindow.show();
+}
+
+ipcMain.on('taskbar-bar:toggle', () => {
+  toggleTaskbarBarWindow();
+});
+
+ipcMain.on('taskbar-bar:hide', () => {
+  if (taskbarBarWindow && !taskbarBarWindow.isDestroyed()) {
+    taskbarBarWindow.hide();
+  }
+});
+
+ipcMain.on('taskbar-bar:control', (event, action) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('taskbar-bar:control-received', action);
+  }
+});
+
+ipcMain.on('taskbar-bar:update-state', (event, state) => {
+  if (taskbarBarWindow && !taskbarBarWindow.isDestroyed()) {
+    taskbarBarWindow.webContents.send('taskbar-bar:state-changed', state);
   }
 });
 
