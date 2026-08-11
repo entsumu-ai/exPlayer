@@ -1406,6 +1406,9 @@ async function playAudio(filePath) {
     const mediaUrl = `media://load/?path=${encodeURIComponent(filePath)}`;
 
     audioTag.src = mediaUrl;
+    if (volumeSlider) {
+      audioTag.volume = parseFloat(volumeSlider.value) / 100;
+    }
     await audioTag.play();
     if (speedSlider) {
       audioTag.playbackRate = speedSlider.value / 100;
@@ -1783,10 +1786,24 @@ function closeFxPopup() {
 
 function handleVolumeChange() {
   if (!volumeSlider) return;
-  const vol = volumeSlider.value / 100;
-  if (volumeVal) volumeVal.textContent = `${volumeSlider.value}%`;
+  const vol = parseFloat(volumeSlider.value) / 100;
+  if (volumeVal) volumeVal.textContent = `${Math.round(vol * 100)}%`;
   
-  if (gainNode) gainNode.gain.value = vol;
+  if (audioTag) {
+    audioTag.volume = vol;
+  }
+  
+  if (gainNode) {
+    try {
+      if (audioCtx && audioCtx.currentTime) {
+        gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+      } else {
+        gainNode.gain.value = vol;
+      }
+    } catch (e) {
+      gainNode.gain.value = vol;
+    }
+  }
   
   if (volumeBtn) {
     if (vol === 0) {
@@ -1811,19 +1828,7 @@ function loadSavedVolume() {
     volumeSlider.value = 80;
   }
   
-  // UIの同期
-  if (volumeVal) volumeVal.textContent = `${volumeSlider.value}%`;
-  const vol = volumeSlider.value / 100;
-  if (volumeBtn) {
-    if (vol === 0) {
-      volumeBtn.textContent = 'volume_off';
-    } else if (vol < 0.5) {
-      volumeBtn.textContent = 'volume_down';
-    } else {
-      volumeBtn.textContent = 'volume_up';
-    }
-  }
-  updateVolumeSliderBackground();
+  handleVolumeChange();
 }
 
 function updateVolumeSliderBackground() {
