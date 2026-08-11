@@ -428,6 +428,15 @@ function setupEventListeners() {
     chkAssociation.addEventListener('change', handleAssociationToggle);
   }
 
+  // タスクバーのサムネイルコントロール（Thumbar）アクションの受信
+  if (window.api && window.api.onThumbarAction) {
+    window.api.onThumbarAction((action) => {
+      if (action === 'prev') handlePrevTrack();
+      else if (action === 'play-pause') handlePlayPause();
+      else if (action === 'next') handleNextTrack();
+    });
+  }
+
   // サイドバー幅可変リサイズ処理のバインド
   const resizer = document.getElementById('sidebar-resizer');
   const sidebar = document.querySelector('.sidebar');
@@ -1280,13 +1289,14 @@ async function playTrack(index) {
   
   const fileExtension = track.ext.toLowerCase();
   
+  updateMediaSession(track);
+
   if (fileExtension === '.mid' || fileExtension === '.midi') {
     await playMidi(track.path);
   } else {
     await playAudio(track.path);
   }
 
-  
   setPlayingState(true);
 }
 
@@ -1430,6 +1440,10 @@ function handleTimeUpdate() {
     const trackColor = 'rgba(255, 255, 255, 0.2)';
     timelineSlider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${percent}%, ${trackColor} ${percent}%, ${trackColor} 100%)`;
   }
+
+  if (window.api && window.api.setProgressBar && total > 0) {
+    window.api.setProgressBar(current / total);
+  }
 }
 
 function handleTrackEnded() {
@@ -1538,6 +1552,32 @@ function setPlayingState(playing) {
     btnPlayPause.title = '再生';
   }
   renderPlaylistTabs();
+  
+  if (window.api && window.api.updateThumbarState) {
+    window.api.updateThumbarState(playing);
+  }
+  if (!playing && window.api && window.api.setProgressBar) {
+    window.api.setProgressBar(-1);
+  }
+}
+
+function updateMediaSession(track) {
+  if ('mediaSession' in navigator && track) {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.name || '不明なトラック',
+        artist: 'exPlayer',
+        album: playingPlaylistName || '再生リスト'
+      });
+      
+      navigator.mediaSession.setActionHandler('play', handlePlayPause);
+      navigator.mediaSession.setActionHandler('pause', handlePlayPause);
+      navigator.mediaSession.setActionHandler('previoustrack', handlePrevTrack);
+      navigator.mediaSession.setActionHandler('nexttrack', handleNextTrack);
+    } catch (e) {
+      console.warn('MediaSession update failed:', e);
+    }
+  }
 }
 
 function toggleShuffle() {

@@ -9,5 +9,8 @@ contextBridge.exposeInMainWorld('api', {
   checkAssociation: () => ipcRenderer.invoke('system:check-association'),
   setAssociation: (enable) => ipcRenderer.invoke('system:set-association', enable),
   getStartFile: () => ipcRenderer.invoke('system:get-start-file'),
-  onOpenFile: (callback) => ipcRenderer.on('open-file', (event, filePath) => callback(filePath))
+  onOpenFile: (callback) => ipcRenderer.on('open-file', (event, filePath) => callback(filePath)),
+  updateThumbarState: (isPlaying) => ipcRenderer.send('thumbar:update-state', isPlaying),
+  setProgressBar: (progress) => ipcRenderer.send('thumbar:set-progress', progress),
+  onThumbarAction: (callback) => ipcRenderer.on('thumbar:action', (event, action) => callback(action))
 });

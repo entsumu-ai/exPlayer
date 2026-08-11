@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -165,6 +165,7 @@ function createWindow() {
     if (windowState.alwaysOnTop) {
       mainWindow.setAlwaysOnTop(true, 'status');
     }
+    updateThumbarButtons(false);
   });
   
   // Rendererのコンソールログをターミナルに出力する
@@ -514,5 +515,51 @@ ipcMain.handle('system:set-association', async (event, enable) => {
       runCommandsSequentially(commands).then(resolve);
     }
   });
+});
+
+// タスクバー (Thumbar) ボタンおよびプログレスバー関連
+function updateThumbarButtons(isPlaying) {
+  if (!mainWindow) return;
+  try {
+    const iconPrev = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'prev.png'));
+    const iconPlay = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'play.png'));
+    const iconPause = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'pause.png'));
+    const iconNext = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'next.png'));
+
+    mainWindow.setThumbarButtons([
+      {
+        tooltip: '前の曲',
+        icon: iconPrev,
+        click() { mainWindow.webContents.send('thumbar:action', 'prev'); }
+      },
+      {
+        tooltip: isPlaying ? '一時停止' : '再生',
+        icon: isPlaying ? iconPause : iconPlay,
+        click() { mainWindow.webContents.send('thumbar:action', 'play-pause'); }
+      },
+      {
+        tooltip: '次の曲',
+        icon: iconNext,
+        click() { mainWindow.webContents.send('thumbar:action', 'next'); }
+      }
+    ]);
+  } catch (e) {
+    console.error('Failed to set thumbar buttons:', e);
+  }
+}
+
+ipcMain.on('thumbar:update-state', (event, isPlaying) => {
+  updateThumbarButtons(isPlaying);
+});
+
+ipcMain.on('thumbar:set-progress', (event, progress) => {
+  if (!mainWindow) return;
+  try {
+    if (typeof progress === 'number') {
+      mainWindow.setProgressBar(progress);
+    } else {
+      mainWindow.setProgressBar(-1);
+    }
+  } catch (e) {}
 });
 
