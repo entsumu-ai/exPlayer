@@ -66,7 +66,9 @@ let windowState = {
   compactWidth: 360,
   compactX: undefined,
   compactY: undefined,
-  alwaysOnTop: false
+  alwaysOnTop: false,
+  flyoutX: undefined,
+  flyoutY: undefined
 };
 try {
   if (fs.existsSync(stateFilePath)) {
@@ -589,6 +591,18 @@ function createFlyoutWindow() {
 
   flyoutWindow.loadFile(path.join(__dirname, 'src', 'flyout.html'));
 
+  flyoutWindow.on('move', () => {
+    if (!flyoutWindow) return;
+    try {
+      const bounds = flyoutWindow.getBounds();
+      if (bounds && !isNaN(bounds.x) && !isNaN(bounds.y)) {
+        windowState.flyoutX = bounds.x;
+        windowState.flyoutY = bounds.y;
+        fs.writeFileSync(stateFilePath, JSON.stringify(windowState, null, 2));
+      }
+    } catch (e) {}
+  });
+
   flyoutWindow.on('blur', () => {
     if (flyoutWindow && !flyoutWindow.isDestroyed()) {
       flyoutWindow.hide();
@@ -619,30 +633,35 @@ function toggleFlyoutWindow(bounds) {
   }
 
   const flyoutBounds = flyoutWindow.getBounds();
-  let x = 0;
-  let y = 0;
+  let x = windowState.flyoutX;
+  let y = windowState.flyoutY;
 
-  if (bounds) {
-    const display = screen.getDisplayMatching(bounds);
-    const workArea = display.workArea;
+  // 過去にユーザーが配置した保存位置が存在しない場合のみデフォルト位置を計算
+  if (typeof x !== 'number' || typeof y !== 'number') {
+    if (bounds) {
+      const display = screen.getDisplayMatching(bounds);
+      const workArea = display.workArea;
 
-    x = Math.round(bounds.x + (bounds.width / 2) - (flyoutBounds.width / 2));
-    y = Math.round(bounds.y - flyoutBounds.height - 6);
+      x = Math.round(bounds.x + (bounds.width / 2) - (flyoutBounds.width / 2));
+      y = Math.round(bounds.y - flyoutBounds.height - 6);
 
-    if (x < workArea.x) x = workArea.x + 8;
-    if (x + flyoutBounds.width > workArea.x + workArea.width) {
-      x = workArea.x + workArea.width - flyoutBounds.width - 8;
+      if (x < workArea.x) x = workArea.x + 8;
+      if (x + flyoutBounds.width > workArea.x + workArea.width) {
+        x = workArea.x + workArea.width - flyoutBounds.width - 8;
+      }
+      if (y < workArea.y) {
+        y = bounds.y + bounds.height + 6;
+      }
+    } else if (mainWindow) {
+      const mainBounds = mainWindow.getBounds();
+      x = mainBounds.x + mainBounds.width - flyoutBounds.width - 20;
+      y = mainBounds.y + 40;
     }
-    if (y < workArea.y) {
-      y = bounds.y + bounds.height + 6;
-    }
-  } else if (mainWindow) {
-    const mainBounds = mainWindow.getBounds();
-    x = mainBounds.x + mainBounds.width - flyoutBounds.width - 20;
-    y = mainBounds.y + 40;
   }
 
-  flyoutWindow.setPosition(x, y);
+  if (typeof x === 'number' && typeof y === 'number') {
+    flyoutWindow.setPosition(x, y);
+  }
   flyoutWindow.show();
   flyoutWindow.focus();
 }
@@ -698,6 +717,18 @@ function createTaskbarBarWindow() {
   });
 
   taskbarBarWindow.loadFile(path.join(__dirname, 'src', 'taskbar-bar.html'));
+
+  taskbarBarWindow.on('move', () => {
+    if (!taskbarBarWindow) return;
+    try {
+      const bounds = taskbarBarWindow.getBounds();
+      if (bounds && !isNaN(bounds.x) && !isNaN(bounds.y)) {
+        windowState.taskbarBarX = bounds.x;
+        windowState.taskbarBarY = bounds.y;
+        fs.writeFileSync(stateFilePath, JSON.stringify(windowState, null, 2));
+      }
+    } catch (e) {}
+  });
 }
 
 function toggleTaskbarBarWindow() {
@@ -708,19 +739,22 @@ function toggleTaskbarBarWindow() {
     return;
   }
 
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const workArea = primaryDisplay.workArea;
-  const bounds = primaryDisplay.bounds;
-
   const barWidth = 480;
   const barHeight = 36;
+  let x = windowState.taskbarBarX;
+  let y = windowState.taskbarBarY;
 
-  // タスクバーの空き領域（ピン留めアイコンの右側スペース）に配置
-  let x = Math.round(workArea.x + (workArea.width / 2) + 60);
-  let y = Math.round(bounds.height - barHeight - 4);
+  if (typeof x !== 'number' || typeof y !== 'number') {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const workArea = primaryDisplay.workArea;
+    const bounds = primaryDisplay.bounds;
 
-  if (x + barWidth > bounds.width) {
-    x = bounds.width - barWidth - 120;
+    x = Math.round(workArea.x + (workArea.width / 2) + 60);
+    y = Math.round(bounds.height - barHeight - 4);
+
+    if (x + barWidth > bounds.width) {
+      x = bounds.width - barWidth - 120;
+    }
   }
 
   taskbarBarWindow.setPosition(x, y);
