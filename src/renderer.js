@@ -145,6 +145,7 @@ const SOUNDFONT_URL = "https://raw.githubusercontent.com/SuperZato/sf2-web-audio
 // ==========================================================================
 
 async function init() {
+  initAudioEngine();
   setupEventListeners();
   loadSavedPlaylist();
   loadSavedTheme();
@@ -1402,13 +1403,16 @@ function stopCurrentPlayback() {
 
 async function playAudio(filePath) {
   try {
+    initAudioEngine();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+    
     // media:// プロトコルを利用してローカルファイルを直接読み込ませる (クエリパラメータ方式)
     const mediaUrl = `media://load/?path=${encodeURIComponent(filePath)}`;
 
     audioTag.src = mediaUrl;
-    if (volumeSlider) {
-      audioTag.volume = parseFloat(volumeSlider.value) / 100;
-    }
+    handleVolumeChange();
     await audioTag.play();
     if (speedSlider) {
       audioTag.playbackRate = speedSlider.value / 100;
@@ -1500,7 +1504,7 @@ function handleTimeUpdate() {
   const total = audioTag.duration || 0;
   
   if (lcdCurrentTime) lcdCurrentTime.textContent = formatTime(current);
-  if (lcdTotalTime && total > 0) lcdTotalTime.textContent = formatTime(total); // 総再生時間の更新バグ修正
+  if (lcdTotalTime && total > 0) lcdTotalTime.textContent = formatTime(total);
   
   if (timelineSlider) {
     timelineSlider.max = Math.floor(total);
@@ -1510,11 +1514,60 @@ function handleTimeUpdate() {
     const trackColor = 'rgba(255, 255, 255, 0.2)';
     timelineSlider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${percent}%, ${trackColor} ${percent}%, ${trackColor} 100%)`;
   }
+}
 
-  if (window.api && window.api.setProgressBar && total > 0) {
-    window.api.setProgressBar(current / total);
+// 60fps超滑らかリアルタイムシークバー＆時間描画ループ
+let smoothProgressAnimId = null;
+
+function startSmoothProgressLoop() {
+  stopSmoothProgressLoop();
+  
+  function renderFrame() {
+    if (!isPlaying) return;
+    
+    let current = 0;
+    let total = 0;
+    
+    if (midiSequencer) {
+      current = midiSequencer.currentTime || 0;
+      total = midiSequencer.duration || 0;
+    } else if (audioTag) {
+      current = audioTag.currentTime || 0;
+      total = audioTag.duration || 0;
+    }
+    
+    if (!isSeeking && total > 0) {
+      if (lcdCurrentTime) lcdCurrentTime.textContent = formatTime(current);
+      if (lcdTotalTime && total > 0) lcdTotalTime.textContent = formatTime(total);
+      
+      if (timelineSlider) {
+        timelineSlider.max = Math.floor(total);
+        timelineSlider.value = Math.floor(current);
+        
+        const percent = (current / total) * 100;
+        const activeColor = 'var(--text-primary, #ffffff)';
+        const trackColor = 'rgba(255, 255, 255, 0.2)';
+        timelineSlider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${percent}%, ${trackColor} ${percent}%, ${trackColor} 100%)`;
+      }
+      
+      if (window.api && window.api.setProgressBar) {
+        window.api.setProgressBar(current / total);
+      }
+      
+      syncFlyoutState();
+    }
+    
+    smoothProgressAnimId = requestAnimationFrame(renderFrame);
   }
-  syncFlyoutState();
+  
+  smoothProgressAnimId = requestAnimationFrame(renderFrame);
+}
+
+function stopSmoothProgressLoop() {
+  if (smoothProgressAnimId) {
+    cancelAnimationFrame(smoothProgressAnimId);
+    smoothProgressAnimId = null;
+  }
 }
 
 function handleTrackEnded() {
@@ -1618,9 +1671,11 @@ function setPlayingState(playing) {
   if (playing) {
     playPauseIcon.textContent = 'pause';
     btnPlayPause.title = '一時停止';
+    startSmoothProgressLoop();
   } else {
     playPauseIcon.textContent = 'play_arrow';
     btnPlayPause.title = '再生';
+    stopSmoothProgressLoop();
   }
   renderPlaylistTabs();
   
@@ -1786,25 +1841,37 @@ function closeFxPopup() {
 
 function handleVolumeChange() {
   if (!volumeSlider) return;
-  const vol = parseFloat(volumeSlider.value) / 100;
-  if (volumeVal) volumeVal.textContent = `${Math.round(vol * 100)}%`;
   
+  const sliderVal = parseFloat(volumeSlider.value);
+  const vol = Math.min(1.0, Math.max(0.0, sliderVal / 100));
+  
+  if (volumeVal) volumeVal.textContent = `${Math.round(sliderVal)}%`;
+
   if (audioTag) {
-    audioTag.volume = vol;
+    try {
+      audioTag.volume = vol;
+    } catch (e) {}
   }
-  
+
   if (gainNode) {
     try {
+      gainNode.gain.value = vol;
       if (audioCtx && audioCtx.currentTime) {
         gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
-      } else {
-        gainNode.gain.value = vol;
       }
     } catch (e) {
-      gainNode.gain.value = vol;
+      try { gainNode.gain.value = vol; } catch (e2) {}
     }
   }
-  
+
+  if (midiSynth && midiSynth.masterVolume !== undefined) {
+    try { midiSynth.masterVolume = vol; } catch (e) {}
+  }
+
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+
   if (volumeBtn) {
     if (vol === 0) {
       volumeBtn.textContent = 'volume_off';
@@ -1814,8 +1881,8 @@ function handleVolumeChange() {
       volumeBtn.textContent = 'volume_up';
     }
   }
-  
-  localStorage.setItem('explayer_volume', volumeSlider.value);
+
+  localStorage.setItem('explayer_volume', sliderVal);
   updateVolumeSliderBackground();
 }
 
