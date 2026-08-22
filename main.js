@@ -37,13 +37,13 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
-    if (mainWindow) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
       mainWindow.focus();
       
       const filePath = parseFilePathFromArgs(commandLine);
       if (filePath) {
-        // レンダラーが準備できているかを考慮して少し待つか、または直接送る
         mainWindow.webContents.send('open-file', filePath);
       }
     }
@@ -524,7 +524,7 @@ ipcMain.handle('system:set-association', async (event, enable) => {
 
 // タスクバー (Thumbar) ボタンおよびプログレスバー関連
 function updateThumbarButtons(isPlaying) {
-  if (!mainWindow) return;
+  if (!mainWindow || mainWindow.isDestroyed()) return;
   try {
     const iconPrev = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'prev.png'));
     const iconPlay = nativeImage.createFromPath(path.join(__dirname, 'src', 'assets', 'thumbar', 'play.png'));
@@ -535,17 +535,29 @@ function updateThumbarButtons(isPlaying) {
       {
         tooltip: '前の曲',
         icon: iconPrev,
-        click() { mainWindow.webContents.send('thumbar:action', 'prev'); }
+        click() {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('thumbar:action', 'prev');
+          }
+        }
       },
       {
         tooltip: isPlaying ? '一時停止' : '再生',
         icon: isPlaying ? iconPause : iconPlay,
-        click() { mainWindow.webContents.send('thumbar:action', 'play-pause'); }
+        click() {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('thumbar:action', 'play-pause');
+          }
+        }
       },
       {
         tooltip: '次の曲',
         icon: iconNext,
-        click() { mainWindow.webContents.send('thumbar:action', 'next'); }
+        click() {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('thumbar:action', 'next');
+          }
+        }
       }
     ]);
   } catch (e) {
@@ -558,7 +570,7 @@ ipcMain.on('thumbar:update-state', (event, isPlaying) => {
 });
 
 ipcMain.on('thumbar:set-progress', (event, progress) => {
-  if (!mainWindow) return;
+  if (!mainWindow || mainWindow.isDestroyed()) return;
   try {
     if (typeof progress === 'number') {
       mainWindow.setProgressBar(progress);
@@ -667,7 +679,7 @@ function toggleFlyoutWindow(bounds) {
 }
 
 ipcMain.on('flyout:show-main', () => {
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.show();
     mainWindow.focus();
