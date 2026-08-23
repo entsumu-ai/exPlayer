@@ -79,9 +79,11 @@ if (flyoutSlider) {
 }
 
 // マウスホイールでの音量操作
-document.addEventListener('wheel', (e) => {
+const handleFlyoutWheelVol = (e) => {
   if (window.api && window.api.adjustVolume) {
     const delta = e.deltaY < 0 ? 0.05 : -0.05;
     window.api.adjustVolume(delta);
   }
-}, { passive: true });
+};
+window.addEventListener('wheel', handleFlyoutWheelVol, { passive: true });
+document.addEventListener('wheel', handleFlyoutWheelVol, { passive: true });

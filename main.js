@@ -601,6 +601,7 @@ function createFlyoutWindow() {
     }
   });
 
+  flyoutWindow.setAlwaysOnTop(true, 'screen-saver');
   flyoutWindow.loadFile(path.join(__dirname, 'src', 'flyout.html'));
 
   flyoutWindow.on('move', () => {
@@ -674,6 +675,7 @@ function toggleFlyoutWindow(bounds) {
   if (typeof x === 'number' && typeof y === 'number') {
     flyoutWindow.setPosition(x, y);
   }
+  flyoutWindow.setAlwaysOnTop(true, 'screen-saver');
   flyoutWindow.show();
   flyoutWindow.focus();
 }
@@ -728,6 +730,7 @@ function createTaskbarBarWindow() {
     }
   });
 
+  taskbarBarWindow.setAlwaysOnTop(true, 'screen-saver');
   taskbarBarWindow.loadFile(path.join(__dirname, 'src', 'taskbar-bar.html'));
 
   taskbarBarWindow.on('move', () => {
@@ -770,6 +773,7 @@ function toggleTaskbarBarWindow() {
   }
 
   taskbarBarWindow.setPosition(x, y);
+  taskbarBarWindow.setAlwaysOnTop(true, 'screen-saver');
   taskbarBarWindow.show();
 }
 

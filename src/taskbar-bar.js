@@ -71,9 +71,11 @@ if (tbSlider) {
 }
 
 // マウスホイールでの音量操作
-document.addEventListener('wheel', (e) => {
+const handleWheelVol = (e) => {
   if (window.api && window.api.adjustVolume) {
     const delta = e.deltaY < 0 ? 0.05 : -0.05;
     window.api.adjustVolume(delta);
   }
-}, { passive: true });
+};
+window.addEventListener('wheel', handleWheelVol, { passive: true });
+document.addEventListener('wheel', handleWheelVol, { passive: true });
