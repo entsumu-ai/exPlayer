@@ -1886,6 +1886,14 @@ function handleVolumeChange() {
   updateVolumeSliderBackground();
 }
 
+function adjustVolumeByDelta(delta) {
+  if (!volumeSlider) return;
+  const currentVal = parseFloat(volumeSlider.value) || 0;
+  const newVal = Math.min(100, Math.max(0, currentVal + (delta * 100)));
+  volumeSlider.value = newVal;
+  handleVolumeChange();
+}
+
 function loadSavedVolume() {
   if (!volumeSlider) return;
   const savedVol = localStorage.getItem('explayer_volume');
