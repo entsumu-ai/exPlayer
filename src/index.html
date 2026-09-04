@@ -14,6 +14,15 @@
 </head>
 
 <body>
+  <!-- 背景アンビエントグロー -->
+  <div id="ambient-glow" class="ambient-glow"></div>
+
+  <!-- 音量 OSD ポップアップ -->
+  <div id="volume-osd" class="volume-osd hidden">
+    <span class="material-icons-round" id="osd-icon">volume_up</span>
+    <span id="osd-text" class="osd-text">80%</span>
+  </div>
+
   <div class="app-container">
 
 
@@ -111,7 +120,16 @@
     <!-- 3. 液晶表示パネル (トグル表示) -->
     <div id="lcd-panel" class="lcd-panel">
       <div class="lcd-grid">
-        <!-- 左：スペアナ -->
+        <!-- 左端：アルバムアート (ジャケット写真) -->
+        <div class="lcd-art-col">
+          <div class="lcd-art-wrapper" id="lcd-art-container" title="アルバムアート">
+            <img id="lcd-album-art" class="lcd-album-art" src="" alt="Album Art" style="display: none;">
+            <div id="lcd-art-placeholder" class="lcd-art-placeholder">
+              <span class="material-icons-round">album</span>
+            </div>
+          </div>
+        </div>
+        <!-- 中央：スペアナ -->
         <div class="lcd-left">
           <canvas id="analyzer-canvas"></canvas>
         </div>

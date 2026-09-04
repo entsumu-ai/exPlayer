@@ -26,10 +26,17 @@
       </div>
     </div>
 
+    <!-- 音量 OSD ポップアップ -->
+    <div id="flyout-volume-osd" class="flyout-volume-osd hidden">
+      <span class="material-icons-round" id="flyout-osd-icon">volume_up</span>
+      <span id="flyout-osd-text">80%</span>
+    </div>
+
     <!-- トラック情報＆ジャケットエリア -->
     <div class="track-info-section">
       <div class="artwork-box">
-        <span class="material-icons-round artwork-icon" id="flyout-art-icon">music_note</span>
+        <img id="flyout-album-art" class="flyout-album-art" src="" alt="Art" style="display: none;">
+        <span class="material-icons-round artwork-icon" id="flyout-art-icon">album</span>
       </div>
       <div class="track-details">
         <div class="track-title-wrapper">
@@ -44,6 +51,7 @@
       <div class="timeline-slider-wrapper">
         <input type="range" id="flyout-timeline-slider" class="flyout-timeline-slider" min="0" max="100" value="0" title="シーク位置を調整">
         <div id="flyout-progress-fill" class="progress-fill" style="width: 0%;"></div>
+        <div id="flyout-tooltip" class="flyout-tooltip">00:00</div>
       </div>
       <div class="time-labels">
         <span id="flyout-current-time">00:00</span>

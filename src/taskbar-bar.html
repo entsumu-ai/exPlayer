@@ -22,12 +22,19 @@
       </div>
     </div>
 
+    <!-- 音量 OSD ポップアップ -->
+    <div id="tb-volume-osd" class="tb-volume-osd hidden">
+      <span class="material-icons-round">volume_up</span>
+      <span id="tb-osd-text">80%</span>
+    </div>
+
     <!-- 再生進捗プログレスバー＆時間 -->
     <div class="progress-section">
       <span id="tb-current-time" class="time-val">00:00</span>
       <div class="bar-wrapper">
         <input type="range" id="tb-timeline-slider" class="tb-timeline-slider" min="0" max="100" value="0" title="シーク位置を調整">
         <div id="tb-progress-fill" class="bar-fill" style="width: 0%;"></div>
+        <div id="tb-tooltip" class="tb-tooltip">00:00</div>
       </div>
       <span id="tb-total-time" class="time-val">00:00</span>
     </div>

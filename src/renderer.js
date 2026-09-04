@@ -27,6 +27,15 @@ const lcdSpeedVal = document.getElementById('lcd-speed-val');
 const lcdCurrentTime = document.getElementById('lcd-current-time');
 const lcdTotalTime = document.getElementById('lcd-total-time');
 const lcdProgressBar = document.getElementById('lcd-progress-bar');
+const lcdAlbumArt = document.getElementById('lcd-album-art');
+const lcdArtPlaceholder = document.getElementById('lcd-art-placeholder');
+const ambientGlow = document.getElementById('ambient-glow');
+const volumeOsd = document.getElementById('volume-osd');
+const osdIcon = document.getElementById('osd-icon');
+const osdText = document.getElementById('osd-text');
+let currentAlbumArtUrl = null;
+let osdTimer = null;
+
 const analyzerCanvas = document.getElementById('analyzer-canvas');
 const canvasCtx = analyzerCanvas.getContext('2d');
 
@@ -1077,10 +1086,7 @@ function renderFileList(files) {
     
     // クラス設定 (再生中または選択中)
     const currentPlayingTrack = playlists[playingPlaylistName]?.[currentTrackIndex];
-    const isCurrentPlaying = isPlaylistTab && 
-                             currentPlaylistName === playingPlaylistName && 
-                             currentPlayingTrack && 
-                             currentPlayingTrack.path === file.path;
+    const isCurrentPlaying = currentPlayingTrack && currentPlayingTrack.path === file.path;
     if (isCurrentPlaying) {
       tr.className = 'playing';
     }
@@ -1089,10 +1095,17 @@ function renderFileList(files) {
     }
     
     const tdIcon = document.createElement('td');
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'file-icon material-icons-round';
-    iconSpan.textContent = file.ext === '.mid' || file.ext === '.midi' ? 'music_note' : 'audiotrack';
-    tdIcon.appendChild(iconSpan);
+    if (isCurrentPlaying) {
+      const eqDiv = document.createElement('div');
+      eqDiv.className = `mini-equalizer ${isPlaying ? 'playing' : 'paused'}`;
+      eqDiv.innerHTML = '<div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>';
+      tdIcon.appendChild(eqDiv);
+    } else {
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'file-icon material-icons-round';
+      iconSpan.textContent = file.ext === '.mid' || file.ext === '.midi' ? 'music_note' : 'audiotrack';
+      tdIcon.appendChild(iconSpan);
+    }
     
     const tdName = document.createElement('td');
     tdName.textContent = file.name;
@@ -1187,15 +1200,18 @@ function renderFileList(files) {
 }
 
 function handleSearch() {
+  if (!fileSearch) return;
   const query = fileSearch.value.toLowerCase().trim();
-  const sourceList = currentTab === 'playlist' ? playlist : currentFolderFiles;
+  const activeList = (currentTab === 'playlist')
+    ? (playlists[currentPlaylistName] || playlist || [])
+    : (currentFolderFiles || []);
   
   if (query === '') {
-    renderFileList(sourceList);
+    renderFileList(activeList);
     return;
   }
   
-  const filtered = sourceList.filter(file => file.name.toLowerCase().includes(query));
+  const filtered = activeList.filter(file => file && file.name && file.name.toLowerCase().includes(query));
   renderFileList(filtered);
 }
 
@@ -1357,6 +1373,7 @@ async function playTrack(index) {
   const fileExtension = track.ext.toLowerCase();
   
   updateMediaSession(track);
+  updateAlbumArt(track.path);
   syncFlyoutState();
 
   if (fileExtension === '.mid' || fileExtension === '.midi') {
@@ -1664,6 +1681,17 @@ function playCurrentOrSelectedTrack() {
 
 function handleStop() {
   stopCurrentPlayback();
+  if (lcdAlbumArt) {
+    lcdAlbumArt.src = '';
+    lcdAlbumArt.style.display = 'none';
+  }
+  if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'flex';
+  if (ambientGlow) {
+    ambientGlow.style.backgroundImage = 'none';
+    ambientGlow.style.opacity = '0';
+  }
+  currentAlbumArtUrl = null;
+  syncFlyoutState();
 }
 
 function setPlayingState(playing) {
@@ -1677,6 +1705,7 @@ function setPlayingState(playing) {
     btnPlayPause.title = '再生';
     stopSmoothProgressLoop();
   }
+  updateMiniEqualizerState(playing);
   renderPlaylistTabs();
   
   if (window.api && window.api.updateThumbarState) {
@@ -1702,7 +1731,8 @@ function syncFlyoutState() {
     currentTimeStr: lcdCurrentTime ? lcdCurrentTime.textContent : '00:00',
     totalTimeStr: lcdTotalTime ? lcdTotalTime.textContent : '00:00',
     progress: progress,
-    isPlaying: isPlaying
+    isPlaying: isPlaying,
+    artUrl: currentAlbumArtUrl
   };
 
   if (window.api && window.api.updateFlyoutState) {
@@ -1892,6 +1922,72 @@ function adjustVolumeByDelta(delta) {
   const newVal = Math.min(100, Math.max(0, currentVal + (delta * 100)));
   volumeSlider.value = newVal;
   handleVolumeChange();
+  showVolumeOSD(newVal);
+}
+
+function showVolumeOSD(volPercent) {
+  if (!volumeOsd || !osdText || !osdIcon) return;
+  const val = Math.round(volPercent);
+  osdText.textContent = `${val}%`;
+  if (val === 0) {
+    osdIcon.textContent = 'volume_off';
+  } else if (val < 50) {
+    osdIcon.textContent = 'volume_down';
+  } else {
+    osdIcon.textContent = 'volume_up';
+  }
+
+  volumeOsd.classList.remove('hidden');
+  clearTimeout(osdTimer);
+  osdTimer = setTimeout(() => {
+    volumeOsd.classList.add('hidden');
+  }, 1100);
+}
+
+function updateMiniEqualizerState(playing) {
+  const eqEls = document.querySelectorAll('.mini-equalizer');
+  eqEls.forEach(el => {
+    if (playing) {
+      el.classList.add('playing');
+      el.classList.remove('paused');
+    } else {
+      el.classList.add('paused');
+      el.classList.remove('playing');
+    }
+  });
+}
+
+async function updateAlbumArt(filePath) {
+  if (!window.api || !window.api.getAlbumArt) return;
+  try {
+    const artUrl = await window.api.getAlbumArt(filePath);
+    if (artUrl) {
+      if (lcdAlbumArt) {
+        lcdAlbumArt.src = artUrl;
+        lcdAlbumArt.style.display = 'block';
+      }
+      if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'none';
+      if (ambientGlow) {
+        ambientGlow.style.backgroundImage = `url("${artUrl}")`;
+        ambientGlow.style.opacity = '0.25';
+      }
+      currentAlbumArtUrl = artUrl;
+    } else {
+      if (lcdAlbumArt) {
+        lcdAlbumArt.src = '';
+        lcdAlbumArt.style.display = 'none';
+      }
+      if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'flex';
+      if (ambientGlow) {
+        ambientGlow.style.backgroundImage = 'none';
+        ambientGlow.style.opacity = '0';
+      }
+      currentAlbumArtUrl = null;
+    }
+  } catch (e) {
+    console.warn("Failed to get album art:", e);
+  }
+  syncFlyoutState();
 }
 
 function loadSavedVolume() {

@@ -50,8 +50,9 @@ if (window.api) {
   });
 }
 
-// シーク操作
+// シーク操作 & ツールチップ
 const tbSlider = document.getElementById('tb-timeline-slider');
+const tbTooltip = document.getElementById('tb-tooltip');
 let isUserSeeking = false;
 
 if (tbSlider) {
@@ -68,13 +69,51 @@ if (tbSlider) {
       window.api.seekToPercent(val / 100);
     }
   });
+
+  // タイムツールチップ
+  tbSlider.addEventListener('mousemove', (e) => {
+    if (!tbTooltip) return;
+    const rect = tbSlider.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const offsetX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const percent = offsetX / rect.width;
+    
+    const totalTimeText = tbTotalTime ? tbTotalTime.textContent : '00:00';
+    const parts = totalTimeText.split(':').map(Number);
+    const totalSec = parts.length === 2 ? parts[0] * 60 + parts[1] : 0;
+    const targetSec = totalSec * percent;
+
+    const m = Math.floor(targetSec / 60);
+    const s = Math.floor(targetSec % 60);
+    tbTooltip.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    tbTooltip.style.left = `${offsetX}px`;
+    tbTooltip.classList.add('visible');
+  });
+
+  tbSlider.addEventListener('mouseleave', () => {
+    if (tbTooltip) tbTooltip.classList.remove('visible');
+  });
 }
 
-// マウスホイールでの音量操作
+// マウスホイールでの音量操作 & OSD表示
+const tbVolumeOsd = document.getElementById('tb-volume-osd');
+const tbOsdText = document.getElementById('tb-osd-text');
+let tbOsdTimer = null;
+
+function showTbOSD(delta) {
+  if (!tbVolumeOsd) return;
+  tbVolumeOsd.classList.remove('hidden');
+  clearTimeout(tbOsdTimer);
+  tbOsdTimer = setTimeout(() => {
+    tbVolumeOsd.classList.add('hidden');
+  }, 1000);
+}
+
 const handleWheelVol = (e) => {
   if (window.api && window.api.adjustVolume) {
     const delta = e.deltaY < 0 ? 0.05 : -0.05;
     window.api.adjustVolume(delta);
+    showTbOSD(delta);
   }
 };
 window.addEventListener('wheel', handleWheelVol, { passive: true });

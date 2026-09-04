@@ -29,5 +29,6 @@ contextBridge.exposeInMainWorld('api', {
   seekToPercent: (percent) => ipcRenderer.send('player:seek-percent', percent),
   adjustVolume: (delta) => ipcRenderer.send('player:adjust-volume', delta),
   onSeekPercent: (callback) => ipcRenderer.on('player:seek-percent-received', (event, percent) => callback(percent)),
-  onAdjustVolume: (callback) => ipcRenderer.on('player:adjust-volume-received', (event, delta) => callback(delta))
+  onAdjustVolume: (callback) => ipcRenderer.on('player:adjust-volume-received', (event, delta) => callback(delta)),
+  getAlbumArt: (filePath) => ipcRenderer.invoke('media:get-album-art', filePath)
 });

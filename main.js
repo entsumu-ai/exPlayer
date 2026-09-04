@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Tray, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Tray, screen, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -248,10 +248,17 @@ app.whenReady().then(() => {
   createFlyoutWindow();
   createTaskbarBarWindow();
   createTray();
+  registerGlobalShortcuts();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+app.on('will-quit', () => {
+  try {
+    globalShortcut.unregisterAll();
+  } catch (e) {}
 });
 
 app.on('window-all-closed', () => {
@@ -733,14 +740,48 @@ function createTaskbarBarWindow() {
   try { taskbarBarWindow.setAlwaysOnTop(true, 'status'); } catch (e) {}
   taskbarBarWindow.loadFile(path.join(__dirname, 'src', 'taskbar-bar.html'));
 
+  let snapTimer = null;
   taskbarBarWindow.on('move', () => {
-    if (!taskbarBarWindow) return;
+    if (!taskbarBarWindow || taskbarBarWindow.isDestroyed()) return;
     try {
       const bounds = taskbarBarWindow.getBounds();
       if (bounds && !isNaN(bounds.x) && !isNaN(bounds.y)) {
         windowState.taskbarBarX = bounds.x;
         windowState.taskbarBarY = bounds.y;
         fs.writeFileSync(stateFilePath, JSON.stringify(windowState, null, 2));
+
+        // 画面端・タスクバー吸着（スナップ）
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(() => {
+          if (!taskbarBarWindow || taskbarBarWindow.isDestroyed()) return;
+          const cur = taskbarBarWindow.getBounds();
+          const display = screen.getDisplayNearestPoint({ x: cur.x, y: cur.y });
+          const workArea = display.workArea;
+          const dispBounds = display.bounds;
+          const SNAP_DIST = 20;
+
+          let targetX = cur.x;
+          let targetY = cur.y;
+
+          if (Math.abs(cur.x - workArea.x) < SNAP_DIST) targetX = workArea.x + 4;
+          if (Math.abs((cur.x + cur.width) - (workArea.x + workArea.width)) < SNAP_DIST) {
+            targetX = workArea.x + workArea.width - cur.width - 4;
+          }
+          if (Math.abs(cur.y - workArea.y) < SNAP_DIST) targetY = workArea.y + 4;
+          if (Math.abs((cur.y + cur.height) - (workArea.y + workArea.height)) < SNAP_DIST) {
+            targetY = workArea.y + workArea.height - cur.height;
+          }
+          if (Math.abs((cur.y + cur.height) - dispBounds.height) < SNAP_DIST) {
+            targetY = dispBounds.height - cur.height - 2;
+          }
+
+          if (targetX !== cur.x || targetY !== cur.y) {
+            taskbarBarWindow.setPosition(targetX, targetY);
+            windowState.taskbarBarX = targetX;
+            windowState.taskbarBarY = targetY;
+            fs.writeFileSync(stateFilePath, JSON.stringify(windowState, null, 2));
+          }
+        }, 120);
       }
     } catch (e) {}
   });
@@ -809,5 +850,122 @@ ipcMain.on('player:adjust-volume', (event, delta) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('player:adjust-volume-received', delta);
   }
+});
+
+// グローバルショートカットの登録
+function registerGlobalShortcuts() {
+  try {
+    globalShortcut.unregisterAll();
+
+    // 再生 / 一時停止
+    globalShortcut.register('CommandOrControl+Alt+Space', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('thumbar:action', 'play-pause');
+      }
+    });
+
+    // 次の曲
+    globalShortcut.register('CommandOrControl+Alt+Right', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('thumbar:action', 'next');
+      }
+    });
+
+    // 前の曲
+    globalShortcut.register('CommandOrControl+Alt+Left', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('thumbar:action', 'prev');
+      }
+    });
+
+    // 音量アップ (+5%)
+    globalShortcut.register('CommandOrControl+Alt+Up', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('player:adjust-volume-received', 0.05);
+      }
+    });
+
+    // 音量ダウン (-5%)
+    globalShortcut.register('CommandOrControl+Alt+Down', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('player:adjust-volume-received', -0.05);
+      }
+    });
+  } catch (e) {
+    console.error('Failed to register global shortcuts:', e);
+  }
+}
+
+// アルバムアート抽出関数 (同一フォルダ内カバー画像 & ID3v2 APIC解析)
+function extractAlbumArt(filePath) {
+  if (!filePath || typeof filePath !== 'string') return null;
+  try {
+    const fileDir = path.dirname(filePath);
+    // 1. 同一フォルダ内のカバー画像検索
+    const candidates = [
+      'cover.jpg', 'cover.png', 'cover.jpeg',
+      'folder.jpg', 'folder.png', 'folder.jpeg',
+      'front.jpg', 'front.png', 'front.jpeg',
+      'album.jpg', 'album.png', 'artwork.jpg', 'artwork.png'
+    ];
+    for (const name of candidates) {
+      const full = path.join(fileDir, name);
+      if (fs.existsSync(full)) {
+        const ext = path.extname(name).toLowerCase();
+        const mime = ext === '.png' ? 'image/png' : 'image/jpeg';
+        const data = fs.readFileSync(full);
+        return `data:${mime};base64,${data.toString('base64')}`;
+      }
+    }
+
+    // 2. ID3v2 APIC フレーム抽出 (MP3, WAV等)
+    const fd = fs.openSync(filePath, 'r');
+    const headerBuf = Buffer.alloc(10);
+    const bytesRead = fs.readSync(fd, headerBuf, 0, 10, 0);
+    if (bytesRead >= 10 && headerBuf.toString('ascii', 0, 3) === 'ID3') {
+      const tagSize = (headerBuf[6] << 21) | (headerBuf[7] << 14) | (headerBuf[8] << 7) | headerBuf[9];
+      const readSize = Math.min(tagSize, 4 * 1024 * 1024);
+      const tagBuf = Buffer.alloc(readSize);
+      fs.readSync(fd, tagBuf, 0, readSize, 10);
+      fs.closeSync(fd);
+
+      const apicIndex = tagBuf.indexOf('APIC');
+      if (apicIndex !== -1) {
+        let offset = apicIndex + 4;
+        const frameSize = tagBuf.readUInt32BE(offset);
+        offset += 4 + 2;
+        const encoding = tagBuf[offset];
+        offset += 1;
+        const mimeEnd = tagBuf.indexOf(0, offset);
+        if (mimeEnd !== -1) {
+          const mime = tagBuf.toString('ascii', offset, mimeEnd) || 'image/jpeg';
+          offset = mimeEnd + 1;
+          const picType = tagBuf[offset];
+          offset += 1;
+          if (encoding === 1 || encoding === 2) {
+            while (offset < tagBuf.length - 1 && !(tagBuf[offset] === 0 && tagBuf[offset + 1] === 0)) {
+              offset += 2;
+            }
+            offset += 2;
+          } else {
+            const descEnd = tagBuf.indexOf(0, offset);
+            offset = descEnd !== -1 ? descEnd + 1 : offset;
+          }
+
+          const imgData = tagBuf.subarray(offset, Math.min(offset + frameSize, tagBuf.length));
+          if (imgData.length > 32) {
+            return `data:${mime};base64,${imgData.toString('base64')}`;
+          }
+        }
+      }
+    } else {
+      fs.closeSync(fd);
+    }
+  } catch (e) {}
+  return null;
+}
+
+ipcMain.handle('media:get-album-art', async (event, filePath) => {
+  return extractAlbumArt(filePath);
 });
 
