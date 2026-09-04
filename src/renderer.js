@@ -1075,6 +1075,7 @@ function renderFileList(files) {
   sortedFiles.forEach((file, index) => {
     const tr = document.createElement('tr');
     tr.dataset.path = file.path;
+    tr.dataset.ext = (file.ext || '').toLowerCase();
     tr.dataset.index = index;
     
     // クラス設定 (再生中または選択中)
@@ -1673,7 +1674,9 @@ function playCurrentOrSelectedTrack() {
 }
 
 function handleStop() {
+  currentTrackIndex = -1;
   stopCurrentPlayback();
+  updateFileListHighlight();
   if (lcdAlbumArt) {
     lcdAlbumArt.src = '';
     lcdAlbumArt.style.display = 'none';
@@ -1695,6 +1698,7 @@ function setPlayingState(playing) {
     stopSmoothProgressLoop();
   }
   updateMiniEqualizerState(playing);
+  updateFileListHighlight();
   renderPlaylistTabs();
   
   if (window.api && window.api.updateThumbarState) {
@@ -1823,18 +1827,41 @@ function handleTimelineChange() {
 function updateFileListHighlight() {
   const isPlaylistTab = currentTab === 'playlist';
   const currentPlayingTrack = playlists[playingPlaylistName]?.[currentTrackIndex];
-  
+  const playingTrackPath = (isPlaying || (audioTag && audioTag.src) || midiSequencer) && currentPlayingTrack ? currentPlayingTrack.path : null;
+
   document.querySelectorAll('#file-list-body tr').forEach(tr => {
     const itemPath = tr.dataset.path;
-    const isCurrentPlaying = isPlaylistTab && 
-                             currentPlaylistName === playingPlaylistName && 
-                             currentPlayingTrack && 
-                             itemPath === currentPlayingTrack.path;
+    const isCurrentPlaying = playingTrackPath && itemPath === playingTrackPath;
                              
     if (isCurrentPlaying) {
       tr.classList.add('playing');
     } else {
       tr.classList.remove('playing');
+    }
+
+    // 先頭列のアイコンを動的に更新（再生中：ミニイコライザー、停止/非再生：音符アイコン）
+    const tdIcon = tr.querySelector('td:first-child');
+    if (tdIcon) {
+      if (isCurrentPlaying) {
+        let eqDiv = tdIcon.querySelector('.mini-equalizer');
+        if (!eqDiv) {
+          tdIcon.innerHTML = '';
+          eqDiv = document.createElement('div');
+          eqDiv.innerHTML = '<div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>';
+          tdIcon.appendChild(eqDiv);
+        }
+        eqDiv.className = `mini-equalizer ${isPlaying ? 'playing' : 'paused'}`;
+      } else {
+        // 現在再生中でない行にイコライザーが残っていれば通常アイコンへ復元
+        if (tdIcon.querySelector('.mini-equalizer')) {
+          tdIcon.innerHTML = '';
+          const ext = tr.dataset.ext || '';
+          const iconSpan = document.createElement('span');
+          iconSpan.className = 'file-icon material-icons-round';
+          iconSpan.textContent = ext === '.mid' || ext === '.midi' ? 'music_note' : 'audiotrack';
+          tdIcon.appendChild(iconSpan);
+        }
+      }
     }
   });
 }
