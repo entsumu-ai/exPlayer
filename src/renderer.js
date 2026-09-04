@@ -2370,6 +2370,107 @@ function formatTime(seconds) {
 
 let pendingPlayAfterAdd = false;
 
+// プレイリスト名の変更処理
+function renamePlaylist(oldName, newName) {
+  const trimmed = newName ? newName.trim() : '';
+  if (!trimmed) {
+    alert("演奏リスト名を入力してください。");
+    return false;
+  }
+  if (trimmed === oldName) {
+    return true; // 変更なし
+  }
+  if (playlists[trimmed]) {
+    alert("その演奏リスト名は既に存在します。");
+    return false;
+  }
+
+  // プレイリストのキー順序を維持したまま名前を変更
+  const updated = {};
+  for (const key of Object.keys(playlists)) {
+    if (key === oldName) {
+      updated[trimmed] = playlists[oldName];
+    } else {
+      updated[key] = playlists[key];
+    }
+  }
+  playlists = updated;
+
+  // 現在選択中・再生中のプレイリスト名の同期
+  if (currentPlaylistName === oldName) {
+    currentPlaylistName = trimmed;
+  }
+  if (playingPlaylistName === oldName) {
+    playingPlaylistName = trimmed;
+    if (lcdPlaylist) {
+      lcdPlaylist.textContent = trimmed;
+    }
+  }
+
+  savePlaylist();
+  return true;
+}
+
+// 演奏リストタブのインライン編集を開始
+function startInlineRename(name, labelSpan, btn) {
+  if (btn.querySelector('.tab-rename-input')) return; // 既に編集中
+
+  const currentCount = playlists[name] ? playlists[name].length : 0;
+  labelSpan.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'tab-rename-input';
+  input.value = name;
+  input.title = 'Enterキーまたは枠外クリックで確定、Escでキャンセル';
+
+  // 入力欄クリックで親ボタンのタブ切り替えイベントが発火しないよう伝播を阻止
+  input.addEventListener('click', (e) => e.stopPropagation());
+  input.addEventListener('dblclick', (e) => e.stopPropagation());
+  input.addEventListener('mousedown', (e) => e.stopPropagation());
+
+  btn.insertBefore(input, labelSpan);
+  input.focus();
+  input.select();
+
+  let isFinished = false;
+  const finish = (commit) => {
+    if (isFinished) return;
+    isFinished = true;
+
+    if (commit) {
+      const val = input.value.trim();
+      if (val && val !== name) {
+        const success = renamePlaylist(name, val);
+        if (!success) {
+          isFinished = false;
+          input.focus();
+          return;
+        }
+        return; // renamePlaylist 内の savePlaylist で renderPlaylistTabs が呼ばれる
+      }
+    }
+
+    // キャンセルまたは同名の場合は表示を復帰
+    input.remove();
+    labelSpan.style.display = '';
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      finish(true);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      finish(false);
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    finish(true);
+  });
+}
+
 // プレイリストの動的タブUIの描画更新
 function renderPlaylistTabs() {
   const container = document.getElementById('playlist-tabs-container');
@@ -2384,12 +2485,31 @@ function renderPlaylistTabs() {
     
     // リスト名と曲数
     const labelSpan = document.createElement('span');
+    labelSpan.title = 'ダブルクリックで演奏リスト名を編集';
     if (isCurrentlyPlayingThis) {
       labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 12.5px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${playlists[name].length})`;
     } else {
       labelSpan.textContent = `${name} (${playlists[name].length})`;
     }
+
+    // ダブルクリックで直接名前を編集
+    labelSpan.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      startInlineRename(name, labelSpan, btn);
+    });
+
     btn.appendChild(labelSpan);
+
+    // 編集ボタン（✏️）
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-tab-edit';
+    editBtn.innerHTML = '<span class="material-icons-round">edit</span>';
+    editBtn.title = '演奏リスト名を変更';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // タブ切り替えを防ぐ
+      startInlineRename(name, labelSpan, btn);
+    });
+    btn.appendChild(editBtn);
     
     // 削除ボタン (最低1つのプレイリストを残す)
     const keys = Object.keys(playlists);

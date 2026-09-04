@@ -1230,6 +1230,7 @@ body {
   flex-shrink: 0;
 }
 
+.btn-tab-edit,
 .btn-tab-close {
   background: transparent;
   border: none;
@@ -1246,14 +1247,41 @@ body {
   margin-left: 2px;
 }
 
+.btn-tab-edit:hover {
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  opacity: 1;
+}
+
 .btn-tab-close:hover {
   background-color: rgba(255, 82, 82, 0.15);
   color: #ff5252;
   opacity: 1;
 }
 
+.btn-tab-edit .material-icons-round,
 .btn-tab-close .material-icons-round {
   font-size: 10px;
+}
+
+.tab-rename-input {
+  background: var(--bg-surface, #1e293b);
+  color: var(--text-primary, #f8fafc);
+  border: 1px solid var(--accent-color, #38bdf8);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  min-width: 80px;
+  max-width: 140px;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.4);
+}
+
+.theme-light-mono .tab-rename-input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #0284c7;
 }
 
 .btn-tab-add {
