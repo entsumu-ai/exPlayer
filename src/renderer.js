@@ -504,14 +504,7 @@ function setupEventListeners() {
     });
   }
 
-  // アプリ全体でのマウスホイール音量操作
-  document.addEventListener('wheel', (e) => {
-    const isScrollableList = e.target.closest('.file-table-wrapper, .sidebar-content, .playlist-scroll');
-    if (!isScrollableList) {
-      const delta = e.deltaY < 0 ? 0.05 : -0.05;
-      adjustVolumeByDelta(delta);
-    }
-  }, { passive: true });
+
 
   // サイドバー幅可変リサイズ処理のバインド
   const resizer = document.getElementById('sidebar-resizer');
@@ -1686,10 +1679,6 @@ function handleStop() {
     lcdAlbumArt.style.display = 'none';
   }
   if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'flex';
-  if (ambientGlow) {
-    ambientGlow.style.backgroundImage = 'none';
-    ambientGlow.style.opacity = '0';
-  }
   currentAlbumArtUrl = null;
   syncFlyoutState();
 }
@@ -1797,18 +1786,11 @@ function updateRepeatButtonUI() {
   }
 }
 
-// マウスホイールでの音量増減処理
+// マウスホイールでの音量増減処理 (コントロール系領域のみ)
 function handleMouseWheelVolume(event) {
-  let vol = parseInt(volumeSlider.value);
-  if (event.deltaY < 0) {
-    // 上スクロール: 音量アップ (+5)
-    vol = Math.min(100, vol + 5);
-  } else if (event.deltaY > 0) {
-    // 下スクロール: 音量ダウン (-5)
-    vol = Math.max(0, vol - 5);
-  }
-  volumeSlider.value = vol;
-  handleVolumeChange();
+  if (event.target.closest('select')) return;
+  const delta = event.deltaY < 0 ? 0.05 : -0.05;
+  adjustVolumeByDelta(delta);
 }
 
 function handleTimelineInput() {
@@ -1967,10 +1949,6 @@ async function updateAlbumArt(filePath) {
         lcdAlbumArt.style.display = 'block';
       }
       if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'none';
-      if (ambientGlow) {
-        ambientGlow.style.backgroundImage = `url("${artUrl}")`;
-        ambientGlow.style.opacity = '0.25';
-      }
       currentAlbumArtUrl = artUrl;
     } else {
       if (lcdAlbumArt) {
@@ -1978,10 +1956,6 @@ async function updateAlbumArt(filePath) {
         lcdAlbumArt.style.display = 'none';
       }
       if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'flex';
-      if (ambientGlow) {
-        ambientGlow.style.backgroundImage = 'none';
-        ambientGlow.style.opacity = '0';
-      }
       currentAlbumArtUrl = null;
     }
   } catch (e) {

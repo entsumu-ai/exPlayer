@@ -1676,23 +1676,7 @@ body {
    2026-09 メジャーアップグレード新機能スタイル
    ========================================================================== */
 
-/* 1. 背景アンビエントグロー */
-.ambient-glow {
-  position: fixed;
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.22;
-  filter: blur(80px);
-  background-size: cover;
-  background-position: center;
-  transition: background-image 0.8s ease, opacity 0.8s ease;
-}
-
-/* 2. 音量 OSD ポップアップ */
+/* 1. 音量 OSD ポップアップ */
 .volume-osd {
   position: fixed;
   top: 50%;
