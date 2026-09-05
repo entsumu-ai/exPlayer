@@ -2424,7 +2424,7 @@ function startInlineRename(name, labelSpan, btn) {
   input.value = name;
   input.title = 'Enterキーまたは枠外クリックで確定、Escでキャンセル';
 
-  // 入力欄クリックやキー操作で親ボタンのタブ切り替えイベントが発火しないよう伝播を阻止
+  // 入力欄クリックやキー操作で親タブの切り替えやショートカット発火を防止
   input.addEventListener('click', (e) => e.stopPropagation());
   input.addEventListener('dblclick', (e) => e.stopPropagation());
   input.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -2432,11 +2432,13 @@ function startInlineRename(name, labelSpan, btn) {
 
   btn.insertBefore(input, labelSpan);
   
-  // フォーカスと全選択
-  setTimeout(() => {
+  // フォーカスと全選択を確実に適用
+  input.focus();
+  input.select();
+  requestAnimationFrame(() => {
     input.focus();
     input.select();
-  }, 20);
+  });
 
   let isFinished = false;
   const finish = (commit) => {
@@ -2462,13 +2464,18 @@ function startInlineRename(name, labelSpan, btn) {
   };
 
   input.addEventListener('keydown', (e) => {
+    e.stopPropagation(); // 他のグローバルショートカットへの伝播を防止
+
+    // 日本語変換中（IME入力中）のEnterキーは確定させない
+    if (e.isComposing || e.keyCode === 229) {
+      return;
+    }
+
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.stopPropagation();
       finish(true);
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      e.stopPropagation();
       finish(false);
     }
   });
@@ -2531,8 +2538,11 @@ function renderPlaylistTabs(forceRecreate = false) {
 
   container.innerHTML = '';
   Object.keys(playlists).forEach(name => {
-    const btn = document.createElement('button');
+    // buttonではなくdivを用いることでinput配置時のChromiumによるキー入力遮断を防止
+    const btn = document.createElement('div');
     btn.dataset.playlistName = name;
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('tabindex', '0');
     const isActive = name === currentPlaylistName && currentTab === 'playlist';
     const isCurrentlyPlayingThis = name === playingPlaylistName && isPlaying;
     btn.className = `tab-button tab-button-playlist ${isActive ? 'active' : ''} ${isCurrentlyPlayingThis ? 'playing' : ''}`;
@@ -2576,6 +2586,14 @@ function renderPlaylistTabs(forceRecreate = false) {
       if (btn.querySelector('.tab-rename-input')) return;
       switchPlaylist(name);
       switchTab('playlist');
+    });
+
+    btn.addEventListener('keydown', (e) => {
+      if (e.target === btn && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        switchPlaylist(name);
+        switchTab('playlist');
+      }
     });
     
     container.appendChild(btn);
