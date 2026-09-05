@@ -530,7 +530,7 @@ body {
   background-color: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
   padding: 0 8px;
-  height: 29px;
+  height: 33px;
   gap: 3px;
 }
 
@@ -1248,21 +1248,45 @@ body {
   gap: 4px;
   overflow-x: auto;
   flex: 1;
+  padding-bottom: 2px;
 }
 
-/* スクロールバーの薄い表示 */
+/* スクロールバーの掴みやすく見やすい表示（スライダ拡大） */
 .playlist-tabs-container::-webkit-scrollbar {
-  height: 3px;
+  height: 7px;
 }
+
 .playlist-tabs-container::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
+
 .playlist-tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.2);
-  border-radius: 1.5px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  transition: background-color var(--transition-fast);
 }
+
 .playlist-tabs-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.4);
+  background: var(--accent-color, #38bdf8);
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+}
+
+.playlist-tabs-container::-webkit-scrollbar-thumb:active {
+  background: #0284c7;
+}
+
+.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
 }
 
 .tab-button-playlist {
