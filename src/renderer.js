@@ -2408,6 +2408,7 @@ function renamePlaylist(oldName, newName) {
   }
 
   savePlaylist();
+  renderPlaylistTabs(true); // キーが変更されたので強制再描画
   return true;
 }
 
@@ -2415,7 +2416,6 @@ function renamePlaylist(oldName, newName) {
 function startInlineRename(name, labelSpan, btn) {
   if (btn.querySelector('.tab-rename-input')) return; // 既に編集中
 
-  const currentCount = playlists[name] ? playlists[name].length : 0;
   labelSpan.style.display = 'none';
 
   const input = document.createElement('input');
@@ -2424,14 +2424,19 @@ function startInlineRename(name, labelSpan, btn) {
   input.value = name;
   input.title = 'Enterキーまたは枠外クリックで確定、Escでキャンセル';
 
-  // 入力欄クリックで親ボタンのタブ切り替えイベントが発火しないよう伝播を阻止
+  // 入力欄クリックやキー操作で親ボタンのタブ切り替えイベントが発火しないよう伝播を阻止
   input.addEventListener('click', (e) => e.stopPropagation());
   input.addEventListener('dblclick', (e) => e.stopPropagation());
   input.addEventListener('mousedown', (e) => e.stopPropagation());
+  input.addEventListener('mouseup', (e) => e.stopPropagation());
 
   btn.insertBefore(input, labelSpan);
-  input.focus();
-  input.select();
+  
+  // フォーカスと全選択
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 20);
 
   let isFinished = false;
   const finish = (commit) => {
@@ -2447,7 +2452,7 @@ function startInlineRename(name, labelSpan, btn) {
           input.focus();
           return;
         }
-        return; // renamePlaylist 内の savePlaylist で renderPlaylistTabs が呼ばれる
+        return; // renamePlaylist 内で再描画される
       }
     }
 
@@ -2459,9 +2464,11 @@ function startInlineRename(name, labelSpan, btn) {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       finish(true);
     } else if (e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       finish(false);
     }
   });
@@ -2471,20 +2478,68 @@ function startInlineRename(name, labelSpan, btn) {
   });
 }
 
+// 既存のタブDOM要素を破棄せずにアクティブ状態と表示内容のみを更新する
+// （タブクリック時にDOMを全破棄するとdblclickイベントがブラウザによってキャンセルされるため）
+function updatePlaylistTabsState() {
+  const container = document.getElementById('playlist-tabs-container');
+  if (!container) return false;
+
+  const currentButtons = Array.from(container.querySelectorAll('.tab-button-playlist'));
+  const currentKeys = Object.keys(playlists);
+
+  // ボタン数またはキーの並び順が一致していない場合は再構築が必要
+  if (currentButtons.length !== currentKeys.length) return false;
+  for (let i = 0; i < currentKeys.length; i++) {
+    if (currentButtons[i].dataset.playlistName !== currentKeys[i]) return false;
+  }
+
+  // 編集中（input表示中）のタブがあればDOMを再生成せず保持
+  if (container.querySelector('.tab-rename-input')) return true;
+
+  // 既存DOMのクラスと表示テキストのみを更新
+  currentButtons.forEach(btn => {
+    const name = btn.dataset.playlistName;
+    const isActive = name === currentPlaylistName && currentTab === 'playlist';
+    const isCurrentlyPlayingThis = name === playingPlaylistName && isPlaying;
+    
+    btn.classList.toggle('active', isActive);
+    btn.classList.toggle('playing', isCurrentlyPlayingThis);
+
+    const labelSpan = btn.querySelector('.tab-label-text');
+    if (labelSpan) {
+      const count = playlists[name] ? playlists[name].length : 0;
+      if (isCurrentlyPlayingThis) {
+        labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 12.5px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${count})`;
+      } else {
+        labelSpan.textContent = `${name} (${count})`;
+      }
+    }
+  });
+
+  return true;
+}
+
 // プレイリストの動的タブUIの描画更新
-function renderPlaylistTabs() {
+function renderPlaylistTabs(forceRecreate = false) {
   const container = document.getElementById('playlist-tabs-container');
   if (!container) return;
+
+  // 既存DOMがそのまま利用できる場合はDOMを破棄せず差分更新（dblclickイベントを保護）
+  if (!forceRecreate && updatePlaylistTabsState()) {
+    return;
+  }
 
   container.innerHTML = '';
   Object.keys(playlists).forEach(name => {
     const btn = document.createElement('button');
+    btn.dataset.playlistName = name;
     const isActive = name === currentPlaylistName && currentTab === 'playlist';
     const isCurrentlyPlayingThis = name === playingPlaylistName && isPlaying;
     btn.className = `tab-button tab-button-playlist ${isActive ? 'active' : ''} ${isCurrentlyPlayingThis ? 'playing' : ''}`;
     
     // リスト名と曲数
     const labelSpan = document.createElement('span');
+    labelSpan.className = 'tab-label-text';
     labelSpan.title = 'ダブルクリックで演奏リスト名を編集';
     if (isCurrentlyPlayingThis) {
       labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 12.5px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${playlists[name].length})`;
@@ -2492,25 +2547,8 @@ function renderPlaylistTabs() {
       labelSpan.textContent = `${name} (${playlists[name].length})`;
     }
 
-    // ダブルクリックで直接名前を編集
-    labelSpan.addEventListener('dblclick', (e) => {
-      e.stopPropagation();
-      startInlineRename(name, labelSpan, btn);
-    });
-
     btn.appendChild(labelSpan);
 
-    // 編集ボタン（✏️）
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn-tab-edit';
-    editBtn.innerHTML = '<span class="material-icons-round">edit</span>';
-    editBtn.title = '演奏リスト名を変更';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // タブ切り替えを防ぐ
-      startInlineRename(name, labelSpan, btn);
-    });
-    btn.appendChild(editBtn);
-    
     // 削除ボタン (最低1つのプレイリストを残す)
     const keys = Object.keys(playlists);
     if (keys.length > 1) {
@@ -2525,7 +2563,17 @@ function renderPlaylistTabs() {
       btn.appendChild(closeBtn);
     }
     
+    // ダブルクリックで直接名前を編集（タブ上のどこをダブルクリックしても反応、×ボタンを除く）
+    btn.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.btn-tab-close')) return;
+      e.stopPropagation();
+      e.preventDefault();
+      startInlineRename(name, labelSpan, btn);
+    });
+
     btn.addEventListener('click', () => {
+      // 編集中ならタブ切り替えしない
+      if (btn.querySelector('.tab-rename-input')) return;
       switchPlaylist(name);
       switchTab('playlist');
     });
@@ -2543,6 +2591,7 @@ function renderPlaylistTabs() {
 // プレイリスト切り替え
 function switchPlaylist(name) {
   if (!playlists[name]) return;
+  if (currentPlaylistName === name && currentTab === 'playlist') return;
   
   playlists[currentPlaylistName] = playlist;
   currentPlaylistName = name;

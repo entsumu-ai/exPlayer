@@ -1230,7 +1230,6 @@ body {
   flex-shrink: 0;
 }
 
-.btn-tab-edit,
 .btn-tab-close {
   background: transparent;
   border: none;
@@ -1247,19 +1246,12 @@ body {
   margin-left: 2px;
 }
 
-.btn-tab-edit:hover {
-  background-color: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  opacity: 1;
-}
-
 .btn-tab-close:hover {
   background-color: rgba(255, 82, 82, 0.15);
   color: #ff5252;
   opacity: 1;
 }
 
-.btn-tab-edit .material-icons-round,
 .btn-tab-close .material-icons-round {
   font-size: 10px;
 }
