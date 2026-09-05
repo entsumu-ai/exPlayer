@@ -1251,7 +1251,7 @@ body {
   padding-bottom: 2px;
 }
 
-/* スクロールバーの掴みやすく見やすい表示（スライダ5px） */
+/* スクロールバーの掴みやすく見やすい表示（スライダ5px・色変更なし） */
 .playlist-tabs-container::-webkit-scrollbar {
   height: 5px;
 }
@@ -1262,19 +1262,14 @@ body {
 }
 
 .playlist-tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  transition: background-color var(--transition-fast);
 }
 
-.playlist-tabs-container::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color, #38bdf8);
-  box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
-}
-
+.playlist-tabs-container::-webkit-scrollbar-thumb:hover,
 .playlist-tabs-container::-webkit-scrollbar-thumb:active {
-  background: #0284c7;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
 }
 
 .theme-light-mono .playlist-tabs-container::-webkit-scrollbar-track {
@@ -1282,11 +1277,12 @@ body {
 }
 
 .theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.3);
 }
 
-.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:hover {
-  background: #0284c7;
+.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:hover,
+.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .tab-button-playlist {
@@ -1773,7 +1769,7 @@ body {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
   border-radius: 30px;
   padding: 12px 26px;
   display: flex;
@@ -1793,8 +1789,8 @@ body {
 
 .volume-osd .material-icons-round {
   font-size: 28px;
-  color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
 .volume-osd .osd-text {
