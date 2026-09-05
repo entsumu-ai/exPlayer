@@ -1251,38 +1251,24 @@ body {
   padding-bottom: 2px;
 }
 
-/* スクロールバーの掴みやすく見やすい表示（スライダ5px・色変更なし） */
+/* スクロールバーの表示（縦スクロールバーと同一色・高さ5px） */
 .playlist-tabs-container::-webkit-scrollbar {
   height: 5px;
 }
 
 .playlist-tabs-container::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  background: transparent;
 }
 
 .playlist-tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(128, 128, 128, 0.2);
   border-radius: 3px;
 }
 
 .playlist-tabs-container::-webkit-scrollbar-thumb:hover,
 .playlist-tabs-container::-webkit-scrollbar-thumb:active {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(128, 128, 128, 0.3);
   box-shadow: none;
-}
-
-.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:hover,
-.theme-light-mono .playlist-tabs-container::-webkit-scrollbar-thumb:active {
-  background: rgba(0, 0, 0, 0.4);
 }
 
 .tab-button-playlist {
