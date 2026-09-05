@@ -1220,10 +1220,15 @@ function switchTab(tab) {
   // タブ切り替え時に選択状態をクリア
   clearFileSelection();
   
+  const pathIcon = document.querySelector('.path-display .material-icons-round');
   if (tab === 'playlist') {
     renderFileList(playlist);
+    if (pathIcon) pathIcon.textContent = 'queue_music';
+    if (currentPathText) currentPathText.textContent = `演奏リスト: ${currentPlaylistName} (${playlist.length}曲)`;
   } else {
     renderFileList(currentFolderFiles);
+    if (pathIcon) pathIcon.textContent = 'folder';
+    if (currentPathText) currentPathText.textContent = currentFolder || "フォルダ未選択";
   }
 
   // プレイリストの動的タブバーの描画更新
@@ -2516,9 +2521,9 @@ function updatePlaylistTabsState() {
     if (labelSpan) {
       const count = playlists[name] ? playlists[name].length : 0;
       if (isCurrentlyPlayingThis) {
-        labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 12.5px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${count})`;
+        labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 13px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${count})`;
       } else {
-        labelSpan.textContent = `${name} (${count})`;
+        labelSpan.innerHTML = `<span class="material-icons-round tab-icon" style="font-size: 13px; vertical-align: middle; margin-right: 4px; opacity: 0.7;">queue_music</span>${name} (${count})`;
       }
     }
   });
@@ -2552,9 +2557,9 @@ function renderPlaylistTabs(forceRecreate = false) {
     labelSpan.className = 'tab-label-text';
     labelSpan.title = 'ダブルクリックで演奏リスト名を編集';
     if (isCurrentlyPlayingThis) {
-      labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 12.5px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${playlists[name].length})`;
+      labelSpan.innerHTML = `<span class="material-icons-round tab-play-icon" style="font-size: 13px; vertical-align: middle; margin-right: 4px; display: inline-flex; align-items: center; justify-content: center; height: 12px; line-height: 1;">volume_up</span>${name} (${playlists[name].length})`;
     } else {
-      labelSpan.textContent = `${name} (${playlists[name].length})`;
+      labelSpan.innerHTML = `<span class="material-icons-round tab-icon" style="font-size: 13px; vertical-align: middle; margin-right: 4px; opacity: 0.7;">queue_music</span>${name} (${playlists[name].length})`;
     }
 
     btn.appendChild(labelSpan);
@@ -2622,6 +2627,9 @@ function switchPlaylist(name) {
   
   if (currentTab === 'playlist') {
     renderFileList(playlist);
+    const pathIcon = document.querySelector('.path-display .material-icons-round');
+    if (pathIcon) pathIcon.textContent = 'queue_music';
+    if (currentPathText) currentPathText.textContent = `演奏リスト: ${name} (${playlist.length}曲)`;
   }
   updateFileListHighlight();
 }

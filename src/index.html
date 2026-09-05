@@ -167,8 +167,13 @@
 
     <!-- 5. タブバー (Mediaエクスプローラ / 演奏リスト) -->
     <div class="tab-bar">
-      <button id="tab-files" class="tab-button active">Media エクスプローラ</button>
+      <button id="tab-files" class="tab-button tab-button-files active">
+        <span class="material-icons-round tab-icon">folder</span>
+        <span>Media エクスプローラ</span>
+      </button>
       
+      <div class="tab-bar-divider"></div>
+
       <!-- 動的プレイリストタブコンテナ -->
       <div id="playlist-tabs-container" class="playlist-tabs-container"></div>
       
