@@ -112,6 +112,7 @@ let isMidiLoading = false;
 
 // プレイヤーの動作状態
 let currentTab = 'files';     // 'files' (フォルダ内) または 'playlist' (演奏リスト)
+let currentFolderPath = '';   // 現在選択されているフォルダパス
 let currentFolderFiles = []; // 現在のフォルダ内の全音声ファイル
 let playlist = [];           // 演奏リスト（プレイリスト）
 let currentTrackIndex = -1;  // 現在再生中のトラック（演奏リスト内のインデックス）
@@ -778,6 +779,7 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
 }
 
 function selectFolder(folderPath, folders, files, skipTabSwitch = false) {
+  currentFolderPath = folderPath;
   if (currentPathText) currentPathText.textContent = folderPath;
   currentFolderFiles = files;
   
@@ -1228,7 +1230,7 @@ function switchTab(tab) {
   } else {
     renderFileList(currentFolderFiles);
     if (pathIcon) pathIcon.textContent = 'folder';
-    if (currentPathText) currentPathText.textContent = currentFolder || "フォルダ未選択";
+    if (currentPathText) currentPathText.textContent = currentFolderPath || localStorage.getItem('explayer_last_folder') || "フォルダ未選択";
   }
 
   // プレイリストの動的タブバーの描画更新

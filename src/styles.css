@@ -608,23 +608,16 @@ body {
 /* フォルダ専用タブの微調整 */
 .tab-button-files {
   font-weight: 600;
+  outline: none;
 }
 
-/* 現在再生中のプレイリストタブに対する強調表示 (下部にライン) */
+/* 現在再生中のプレイリストタブに対する表示 (下部ラインは選択タブと誤認されるため廃止し、文字色とスピーカーアイコンで表現) */
 .tab-button-playlist.playing {
-  color: var(--accent-color) !important;
-  position: relative;
+  color: var(--text-primary);
 }
 
-.tab-button-playlist.playing::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  width: 80%;
-  height: 2px;
-  background-color: var(--accent-color);
-  box-shadow: var(--accent-glow);
+.tab-button-playlist.playing .tab-play-icon {
+  color: var(--accent-color);
 }
 
 .tab-play-icon {
