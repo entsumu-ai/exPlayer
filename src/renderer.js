@@ -2593,7 +2593,10 @@ function switchPlaylist(name) {
   if (!playlists[name]) return;
   if (currentPlaylistName === name && currentTab === 'playlist') return;
   
-  playlists[currentPlaylistName] = playlist;
+  // 変更前のプレイリストが存在する場合のみ退避
+  if (playlists[currentPlaylistName]) {
+    playlists[currentPlaylistName] = playlist;
+  }
   currentPlaylistName = name;
   playlist = playlists[name];
   
@@ -2651,18 +2654,35 @@ function deletePlaylistByName(name) {
   }
 
   if (confirm(`演奏リスト「${name}」を削除しますか？`)) {
-    // 削除対象の再生状態の停止
-    if (name === currentPlaylistName) {
+    // 再生中のリストが削除される場合は再生を停止
+    if (name === playingPlaylistName) {
       stopCurrentPlayback();
       currentTrackIndex = -1;
+      playingPlaylistName = "";
+      if (lcdPlaylist) {
+        lcdPlaylist.textContent = "NONE";
+      }
     }
 
+    const isDeletingCurrent = (name === currentPlaylistName);
+
+    // プレイリストから完全に削除
     delete playlists[name];
-    
-    // 残りのリストに切り替え
+
     const remainingKeys = Object.keys(playlists);
-    const nextActive = remainingKeys.includes(currentPlaylistName) ? currentPlaylistName : remainingKeys[0];
-    switchPlaylist(nextActive);
+    if (isDeletingCurrent) {
+      // 削除されたリストを表示していた場合、残りの先頭リストに切り替え
+      currentPlaylistName = remainingKeys[0];
+      playlist = playlists[currentPlaylistName];
+      if (currentTab === 'playlist') {
+        renderFileList(playlist);
+      }
+      updateFileListHighlight();
+    }
+
+    // 保存とタブの強制再描画
+    savePlaylist();
+    renderPlaylistTabs(true);
   }
 }
 
