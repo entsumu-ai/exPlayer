@@ -530,7 +530,7 @@ body {
   background-color: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
   padding: 0 8px;
-  height: 33px;
+  height: 31px;
   gap: 3px;
 }
 
@@ -1251,19 +1251,19 @@ body {
   padding-bottom: 2px;
 }
 
-/* スクロールバーの掴みやすく見やすい表示（スライダ拡大） */
+/* スクロールバーの掴みやすく見やすい表示（スライダ5px） */
 .playlist-tabs-container::-webkit-scrollbar {
-  height: 7px;
+  height: 5px;
 }
 
 .playlist-tabs-container::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .playlist-tabs-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.28);
-  border-radius: 4px;
+  border-radius: 3px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   transition: background-color var(--transition-fast);
 }
