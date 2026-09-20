@@ -142,7 +142,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #38bdf8;
+  color: #ffffff;
   font-family: 'Orbitron', monospace;
   font-size: 16px;
   font-weight: 700;
@@ -155,6 +155,10 @@ body {
 .flyout-volume-osd.hidden {
   opacity: 0;
   transform: translate(-50%, -50%) scale(0.85);
+}
+
+.flyout-volume-osd .material-icons-round {
+  color: #ffffff;
 }
 
 .flyout-tooltip {

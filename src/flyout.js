@@ -75,6 +75,11 @@ if (window.api) {
       playIcon.textContent = state.isPlaying ? 'pause' : 'play_arrow';
       btnPlay.title = state.isPlaying ? '一時停止' : '再生';
     }
+
+    if (typeof state.volume === 'number') {
+      currentVolume = Math.round(state.volume);
+      updateFlyoutVolumeDisplay(currentVolume);
+    }
   });
 
   // 音量変更通知の受信 (OSD表示用)
@@ -134,10 +139,26 @@ if (flyoutSlider) {
 // マウスホイールでの音量操作 & OSD表示
 const flyoutVolumeOsd = document.getElementById('flyout-volume-osd');
 const flyoutOsdVal = document.getElementById('flyout-osd-text');
+const flyoutOsdIcon = document.getElementById('flyout-osd-icon');
+let currentVolume = 80;
 let flyoutOsdTimer = null;
 
-function showFlyoutOSD(delta) {
+function updateFlyoutVolumeDisplay(vol) {
+  if (flyoutOsdVal) flyoutOsdVal.textContent = `${vol}%`;
+  if (flyoutOsdIcon) {
+    if (vol === 0) {
+      flyoutOsdIcon.textContent = 'volume_off';
+    } else if (vol < 50) {
+      flyoutOsdIcon.textContent = 'volume_down';
+    } else {
+      flyoutOsdIcon.textContent = 'volume_up';
+    }
+  }
+}
+
+function showFlyoutOSD(vol) {
   if (!flyoutVolumeOsd) return;
+  updateFlyoutVolumeDisplay(vol);
   flyoutVolumeOsd.classList.remove('hidden');
   clearTimeout(flyoutOsdTimer);
   flyoutOsdTimer = setTimeout(() => {
@@ -148,8 +169,13 @@ function showFlyoutOSD(delta) {
 const handleFlyoutWheelVol = (e) => {
   if (window.api && window.api.adjustVolume) {
     const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    if (delta > 0) {
+      currentVolume = Math.min(100, Math.floor(currentVolume / 5) * 5 + 5);
+    } else {
+      currentVolume = Math.max(0, Math.ceil(currentVolume / 5) * 5 - 5);
+    }
+    showFlyoutOSD(currentVolume);
     window.api.adjustVolume(delta);
-    showFlyoutOSD(delta);
   }
 };
 window.addEventListener('wheel', handleFlyoutWheelVol, { passive: true });

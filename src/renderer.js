@@ -454,6 +454,7 @@ function setupEventListeners() {
     btnFlyoutToggle.addEventListener('click', () => {
       if (window.api && window.api.toggleFlyoutWindow) {
         window.api.toggleFlyoutWindow();
+        syncFlyoutState();
       }
     });
   }
@@ -473,6 +474,7 @@ function setupEventListeners() {
     btnTaskbarBarToggle.addEventListener('click', () => {
       if (window.api && window.api.toggleTaskbarBarWindow) {
         window.api.toggleTaskbarBarWindow();
+        syncFlyoutState();
       }
     });
   }
@@ -1732,7 +1734,8 @@ function syncFlyoutState() {
     totalTimeStr: lcdTotalTime ? lcdTotalTime.textContent : '00:00',
     progress: progress,
     isPlaying: isPlaying,
-    artUrl: currentAlbumArtUrl
+    artUrl: currentAlbumArtUrl,
+    volume: volumeSlider ? Math.round(parseFloat(volumeSlider.value) || 0) : 80
   };
 
   if (window.api && window.api.updateFlyoutState) {
@@ -1930,12 +1933,19 @@ function handleVolumeChange() {
 
   localStorage.setItem('explayer_volume', sliderVal);
   updateVolumeSliderBackground();
+  syncFlyoutState();
 }
 
 function adjustVolumeByDelta(delta) {
   if (!volumeSlider) return;
   const currentVal = parseFloat(volumeSlider.value) || 0;
-  const newVal = Math.min(100, Math.max(0, currentVal + (delta * 100)));
+  let targetVal;
+  if (delta > 0) {
+    targetVal = Math.floor(currentVal / 5) * 5 + 5;
+  } else {
+    targetVal = Math.ceil(currentVal / 5) * 5 - 5;
+  }
+  const newVal = Math.min(100, Math.max(0, targetVal));
   volumeSlider.value = newVal;
   handleVolumeChange();
   showVolumeOSD(newVal);

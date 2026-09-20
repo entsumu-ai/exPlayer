@@ -47,6 +47,11 @@ if (window.api) {
       playIcon.textContent = state.isPlaying ? 'pause' : 'play_arrow';
       btnPlay.title = state.isPlaying ? '一時停止' : '再生';
     }
+
+    if (typeof state.volume === 'number') {
+      currentVolume = Math.round(state.volume);
+      updateTbVolumeDisplay(currentVolume);
+    }
   });
 }
 
@@ -98,10 +103,26 @@ if (tbSlider) {
 // マウスホイールでの音量操作 & OSD表示
 const tbVolumeOsd = document.getElementById('tb-volume-osd');
 const tbOsdText = document.getElementById('tb-osd-text');
+const tbOsdIcon = document.getElementById('tb-osd-icon');
+let currentVolume = 80;
 let tbOsdTimer = null;
 
-function showTbOSD(delta) {
+function updateTbVolumeDisplay(vol) {
+  if (tbOsdText) tbOsdText.textContent = `${vol}%`;
+  if (tbOsdIcon) {
+    if (vol === 0) {
+      tbOsdIcon.textContent = 'volume_off';
+    } else if (vol < 50) {
+      tbOsdIcon.textContent = 'volume_down';
+    } else {
+      tbOsdIcon.textContent = 'volume_up';
+    }
+  }
+}
+
+function showTbOSD(vol) {
   if (!tbVolumeOsd) return;
+  updateTbVolumeDisplay(vol);
   tbVolumeOsd.classList.remove('hidden');
   clearTimeout(tbOsdTimer);
   tbOsdTimer = setTimeout(() => {
@@ -112,8 +133,13 @@ function showTbOSD(delta) {
 const handleWheelVol = (e) => {
   if (window.api && window.api.adjustVolume) {
     const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    if (delta > 0) {
+      currentVolume = Math.min(100, Math.floor(currentVolume / 5) * 5 + 5);
+    } else {
+      currentVolume = Math.max(0, Math.ceil(currentVolume / 5) * 5 - 5);
+    }
+    showTbOSD(currentVolume);
     window.api.adjustVolume(delta);
-    showTbOSD(delta);
   }
 };
 window.addEventListener('wheel', handleWheelVol, { passive: true });

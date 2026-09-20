@@ -220,7 +220,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #38bdf8;
+  color: #ffffff;
   font-family: 'Orbitron', monospace;
   font-size: 13px;
   font-weight: 700;
@@ -237,6 +237,7 @@ body {
 
 .tb-volume-osd .material-icons-round {
   font-size: 16px;
+  color: #ffffff;
 }
 
 /* シークバー ツールチップ */
