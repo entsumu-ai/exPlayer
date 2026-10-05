@@ -97,7 +97,8 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      backgroundThrottling: false
     },
     title: "exPlayer",
     autoHideMenuBar: true
@@ -639,6 +640,17 @@ function createTray() {
     tray.on('click', (event, bounds) => {
       toggleFlyoutWindow(bounds);
     });
+
+    tray.on('double-click', () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.show();
+        mainWindow.focus();
+      }
+      if (taskbarBarWindow && !taskbarBarWindow.isDestroyed() && taskbarBarWindow.isVisible()) {
+        taskbarBarWindow.hide();
+      }
+    });
   } catch (e) {
     console.error('Failed to create tray:', e);
   }
@@ -692,6 +704,9 @@ ipcMain.on('flyout:show-main', () => {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.show();
     mainWindow.focus();
+  }
+  if (taskbarBarWindow && !taskbarBarWindow.isDestroyed() && taskbarBarWindow.isVisible()) {
+    taskbarBarWindow.hide();
   }
 });
 
@@ -792,6 +807,12 @@ function toggleTaskbarBarWindow() {
   
   if (taskbarBarWindow.isVisible()) {
     taskbarBarWindow.hide();
+    // ミニバーを非表示にした場合は本体を再表示
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
     return;
   }
 
@@ -816,6 +837,11 @@ function toggleTaskbarBarWindow() {
   taskbarBarWindow.setPosition(x, y);
   try { taskbarBarWindow.setAlwaysOnTop(true, 'status'); } catch (e) {}
   taskbarBarWindow.show();
+
+  // ミニバー表示時は本体を非表示にする
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.hide();
+  }
 }
 
 ipcMain.on('taskbar-bar:toggle', () => {
@@ -825,6 +851,12 @@ ipcMain.on('taskbar-bar:toggle', () => {
 ipcMain.on('taskbar-bar:hide', () => {
   if (taskbarBarWindow && !taskbarBarWindow.isDestroyed()) {
     taskbarBarWindow.hide();
+  }
+  // ミニバーを閉じた際、本体が非表示であれば本体を再表示
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
   }
 });
 
