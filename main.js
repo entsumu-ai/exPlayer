@@ -37,7 +37,12 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    if (taskbarBarWindow && !taskbarBarWindow.isDestroyed() && taskbarBarWindow.isVisible()) {
+      taskbarBarWindow.hide();
+    }
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      createWindow();
+    } else {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.show();
       mainWindow.focus();
@@ -131,6 +136,24 @@ function createWindow() {
     } catch (e) {
       console.error('Failed to save window state:', e);
     }
+  });
+
+  // メインウィンドウが閉じられたらサブウィンドウ・トレイも破棄してアプリを完全終了する
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+    try {
+      if (flyoutWindow && !flyoutWindow.isDestroyed()) {
+        flyoutWindow.destroy();
+      }
+      if (taskbarBarWindow && !taskbarBarWindow.isDestroyed()) {
+        taskbarBarWindow.destroy();
+      }
+      if (tray) {
+        tray.destroy();
+        tray = null;
+      }
+    } catch (e) {}
+    app.quit();
   });
 
   // ウィンドウのリサイズや移動イベントを監視して、状態を常に最新に保つ

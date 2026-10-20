@@ -745,21 +745,34 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
         childrenContainer.className = 'tree-children';
         node.appendChild(childrenContainer);
         
-        try {
-          const contents = await window.api.readDirectory(folderPath);
-          if (contents.folders.length === 0) {
-            arrow.style.visibility = 'hidden';
-          } else {
-            contents.folders.forEach(sub => {
-              const childNode = createFolderTreeNode(sub.name, sub.path);
-              childrenContainer.appendChild(childNode);
-            });
-          }
-        } catch (err) {
-          console.error("Failed to read directory:", err);
-        }
       } else {
+        childrenContainer.innerHTML = '';
         childrenContainer.style.display = 'block';
+      }
+      try {
+        const contents = await window.api.readDirectory(folderPath);
+        if (contents.folders.length === 0) {
+          arrow.style.visibility = 'hidden';
+          arrow.classList.remove('expanded');
+        } else {
+          arrow.style.visibility = 'visible';
+          contents.folders.forEach(sub => {
+            const childNode = createFolderTreeNode(sub.name, sub.path);
+            if (currentFolderPath && sub.path.toLowerCase() === currentFolderPath.toLowerCase()) {
+              const childItem = childNode.querySelector('.tree-item');
+              if (childItem) childItem.classList.add('active');
+            }
+            childrenContainer.appendChild(childNode);
+          });
+        }
+        if (currentFolderPath && folderPath.toLowerCase() === currentFolderPath.toLowerCase()) {
+          currentFolderFiles = contents.files;
+          if (currentTab === 'files') {
+            renderFileList(contents.files);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to read directory:", err);
       }
     }
   });
@@ -769,6 +782,24 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
     item.classList.add('active');
     
     const contents = await window.api.readDirectory(folderPath);
+    if (contents.folders.length === 0) {
+      arrow.style.visibility = 'hidden';
+      arrow.classList.remove('expanded');
+      const childrenContainer = node.querySelector('.tree-children');
+      if (childrenContainer) childrenContainer.innerHTML = '';
+    } else {
+      arrow.style.visibility = 'visible';
+      if (arrow.classList.contains('expanded')) {
+        const childrenContainer = node.querySelector('.tree-children');
+        if (childrenContainer) {
+          childrenContainer.innerHTML = '';
+          contents.folders.forEach(sub => {
+            const childNode = createFolderTreeNode(sub.name, sub.path);
+            childrenContainer.appendChild(childNode);
+          });
+        }
+      }
+    }
     selectFolder(folderPath, contents.folders, contents.files);
   });
   
@@ -884,21 +915,34 @@ function createSystemRootNode(name, folderPath, type) {
         childrenContainer.className = 'tree-children';
         node.appendChild(childrenContainer);
         
-        try {
-          const contents = await window.api.readDirectory(folderPath);
-          if (contents.folders.length === 0) {
-            arrow.style.visibility = 'hidden';
-          } else {
-            contents.folders.forEach(sub => {
-              const childNode = createFolderTreeNode(sub.name, sub.path);
-              childrenContainer.appendChild(childNode);
-            });
-          }
-        } catch (err) {
-          console.error("Failed to read directory:", err);
-        }
       } else {
+        childrenContainer.innerHTML = '';
         childrenContainer.style.display = 'block';
+      }
+      try {
+        const contents = await window.api.readDirectory(folderPath);
+        if (contents.folders.length === 0) {
+          arrow.style.visibility = 'hidden';
+          arrow.classList.remove('expanded');
+        } else {
+          arrow.style.visibility = 'visible';
+          contents.folders.forEach(sub => {
+            const childNode = createFolderTreeNode(sub.name, sub.path);
+            if (currentFolderPath && sub.path.toLowerCase() === currentFolderPath.toLowerCase()) {
+              const childItem = childNode.querySelector('.tree-item');
+              if (childItem) childItem.classList.add('active');
+            }
+            childrenContainer.appendChild(childNode);
+          });
+        }
+        if (currentFolderPath && folderPath.toLowerCase() === currentFolderPath.toLowerCase()) {
+          currentFolderFiles = contents.files;
+          if (currentTab === 'files') {
+            renderFileList(contents.files);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to read directory:", err);
       }
     }
   });
@@ -908,6 +952,24 @@ function createSystemRootNode(name, folderPath, type) {
     item.classList.add('active');
     
     const contents = await window.api.readDirectory(folderPath);
+    if (contents.folders.length === 0) {
+      arrow.style.visibility = 'hidden';
+      arrow.classList.remove('expanded');
+      const childrenContainer = node.querySelector('.tree-children');
+      if (childrenContainer) childrenContainer.innerHTML = '';
+    } else {
+      arrow.style.visibility = 'visible';
+      if (arrow.classList.contains('expanded')) {
+        const childrenContainer = node.querySelector('.tree-children');
+        if (childrenContainer) {
+          childrenContainer.innerHTML = '';
+          contents.folders.forEach(sub => {
+            const childNode = createFolderTreeNode(sub.name, sub.path);
+            childrenContainer.appendChild(childNode);
+          });
+        }
+      }
+    }
     selectFolder(folderPath, contents.folders, contents.files);
   });
   
@@ -1230,9 +1292,21 @@ function switchTab(tab) {
     if (pathIcon) pathIcon.textContent = 'queue_music';
     if (currentPathText) currentPathText.textContent = `演奏リスト: ${currentPlaylistName} (${playlist.length}曲)`;
   } else {
+    const targetFolder = currentFolderPath || localStorage.getItem('explayer_last_folder');
     renderFileList(currentFolderFiles);
     if (pathIcon) pathIcon.textContent = 'folder';
-    if (currentPathText) currentPathText.textContent = currentFolderPath || localStorage.getItem('explayer_last_folder') || "フォルダ未選択";
+    if (currentPathText) currentPathText.textContent = targetFolder || "フォルダ未選択";
+    if (targetFolder && window.api && window.api.readDirectory) {
+      window.api.readDirectory(targetFolder).then(contents => {
+        if (contents && Array.isArray(contents.files)) {
+          currentFolderPath = targetFolder;
+          currentFolderFiles = contents.files;
+          if (currentTab === 'files') {
+            renderFileList(currentFolderFiles);
+          }
+        }
+      }).catch(() => {});
+    }
   }
 
   // プレイリストの動的タブバーの描画更新
