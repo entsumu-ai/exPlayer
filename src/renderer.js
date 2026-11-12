@@ -126,11 +126,21 @@ let selectedIndices = [];      // 現在のタブで選択されているファ�
 let lastSelectedIndex = -1;    // 最後にクリックされたファイルのインデックス (Shiftキー範囲用)
 let isDraggingFiles = false;   // ドラッグ選択中フラグ
 
-// 複数プレイリスト用の状態変数
+// 複数プレイリスト・再生ソース用の状態変数
 let playlists = { "デフォルト": [] };  // 演奏リストのマップ構造
 let currentPlaylistName = "デフォルト";  // 現在選択されている演奏リストの名前
 let pendingAddFiles = [];      // 追加確認待ちのファイルリスト
 let playingPlaylistName = "";  // 現在再生中の演奏リストの名前
+let playingSource = 'playlist'; // 'playlist' または 'folder'
+let playingFolderFiles = [];    // フォルダ直接再生中のファイル配列
+let playingFolderPath = '';     // フォルダ直接再生中のフォルダパス
+
+function getActivePlayingList() {
+  if (playingSource === 'folder') {
+    return playingFolderFiles || [];
+  }
+  return playlists[playingPlaylistName] || playlist || [];
+}
 
 // ソート用の状態変数
 let sortField = 'name';
@@ -298,6 +308,17 @@ function setupEventListeners() {
     thName.addEventListener('click', toggleNameSort);
   }
 
+  // フォルダ一括直接再生ボタン
+  const btnPlayFolder = document.getElementById('btn-play-folder');
+  if (btnPlayFolder) {
+    btnPlayFolder.addEventListener('click', () => {
+      if (currentFolderFiles && currentFolderFiles.length > 0) {
+        const startIdx = (selectedIndices && selectedIndices.length > 0) ? selectedIndices[0] : 0;
+        playFolderDirectly(currentFolderPath, currentFolderFiles, startIdx);
+      }
+    });
+  }
+
   // 複数選択一括操作ボタンのイベント
   const btnAddSelected = document.getElementById('btn-add-selected');
   if (btnAddSelected) {
@@ -315,10 +336,44 @@ function setupEventListeners() {
   // モーダルのイベント
   if (modalCreateNewCheck) {
     modalCreateNewCheck.addEventListener('change', () => {
-      if (modalCreateNewCheck.checked) {
+      if (modalNewPlaylistField) {
         modalNewPlaylistField.classList.remove('hidden');
-      } else {
-        modalNewPlaylistField.classList.add('hidden');
+      }
+      if (modalCreateNewCheck.checked && modalNewPlaylistName) {
+        setTimeout(() => modalNewPlaylistName.focus(), 20);
+      }
+    });
+  }
+  if (modalPlaylistSelect) {
+    modalPlaylistSelect.addEventListener('change', () => {
+      if (modalCreateNewCheck) {
+        modalCreateNewCheck.checked = false;
+      }
+    });
+  }
+  if (modalNewPlaylistName) {
+    const activateNewPlaylistCheck = (e) => {
+      e.stopPropagation();
+      if (modalNewPlaylistField) {
+        modalNewPlaylistField.classList.remove('hidden');
+      }
+      if (modalCreateNewCheck && !modalCreateNewCheck.checked) {
+        modalCreateNewCheck.checked = true;
+      }
+    };
+    modalNewPlaylistName.addEventListener('mousedown', activateNewPlaylistCheck);
+    modalNewPlaylistName.addEventListener('click', activateNewPlaylistCheck);
+    modalNewPlaylistName.addEventListener('focus', activateNewPlaylistCheck);
+    modalNewPlaylistName.addEventListener('input', activateNewPlaylistCheck);
+    modalNewPlaylistName.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmAddPendingFiles();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeAddConfirmModal();
       }
     });
   }
@@ -337,10 +392,16 @@ function setupEventListeners() {
     btnNewPlaylistModalConfirm.addEventListener('click', confirmCreateNewPlaylist);
   }
   if (newPlaylistInputName) {
+    newPlaylistInputName.addEventListener('mousedown', (e) => e.stopPropagation());
+    newPlaylistInputName.addEventListener('click', (e) => e.stopPropagation());
     newPlaylistInputName.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.isComposing || e.keyCode === 229) return;
       if (e.key === 'Enter') {
+        e.preventDefault();
         confirmCreateNewPlaylist();
       } else if (e.key === 'Escape') {
+        e.preventDefault();
         closeNewPlaylistModal();
       }
     });
@@ -701,6 +762,26 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
   label.className = 'tree-label';
   label.textContent = name;
   
+  // フォルダ直接再生ボタン (ホバー時に表示)
+  const btnPlayFolder = document.createElement('button');
+  btnPlayFolder.className = 'btn-tree-add btn-tree-play';
+  btnPlayFolder.title = 'このフォルダをそのまま再生';
+  btnPlayFolder.innerHTML = '<span class="material-icons-round">play_arrow</span>';
+  btnPlayFolder.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      const contents = await window.api.readDirectory(folderPath);
+      selectFolder(folderPath, contents.folders, contents.files);
+      if (contents.files && contents.files.length > 0) {
+        await playFolderDirectly(folderPath, contents.files, 0);
+      }
+    } catch (err) {
+      console.error("Failed to play folder directly:", err);
+    }
+  });
+
   // 演奏リストに追加ボタン (ホバー時に表示)
   const btnAdd = document.createElement('button');
   btnAdd.className = 'btn-tree-add';
@@ -712,18 +793,16 @@ function createFolderTreeNode(name, folderPath, isRoot = false) {
       const contents = await window.api.readDirectory(folderPath);
       if (contents.files && contents.files.length > 0) {
         showAddConfirmModal(contents.files);
-      } else {
-        alert("このフォルダ内に追加可能な音楽ファイルが見つかりませんでした。");
       }
     } catch (err) {
       console.error("Failed to read folder files for adding:", err);
-      alert("フォルダの読み込みに失敗しました。");
     }
   });
   
   item.appendChild(arrow);
   item.appendChild(icon);
   item.appendChild(label);
+  item.appendChild(btnPlayFolder);
   item.appendChild(btnAdd);
   node.appendChild(item);
   
@@ -871,6 +950,26 @@ function createSystemRootNode(name, folderPath, type) {
   label.className = 'tree-label';
   label.textContent = name;
   
+  // フォルダ直接再生ボタン (ホバー時に表示)
+  const btnPlayFolder = document.createElement('button');
+  btnPlayFolder.className = 'btn-tree-add btn-tree-play';
+  btnPlayFolder.title = 'このフォルダをそのまま再生';
+  btnPlayFolder.innerHTML = '<span class="material-icons-round">play_arrow</span>';
+  btnPlayFolder.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      const contents = await window.api.readDirectory(folderPath);
+      selectFolder(folderPath, contents.folders, contents.files);
+      if (contents.files && contents.files.length > 0) {
+        await playFolderDirectly(folderPath, contents.files, 0);
+      }
+    } catch (err) {
+      console.error("Failed to play folder directly:", err);
+    }
+  });
+
   // 演奏リストに追加ボタン (ホバー時に表示)
   const btnAdd = document.createElement('button');
   btnAdd.className = 'btn-tree-add';
@@ -882,18 +981,16 @@ function createSystemRootNode(name, folderPath, type) {
       const contents = await window.api.readDirectory(folderPath);
       if (contents.files && contents.files.length > 0) {
         showAddConfirmModal(contents.files);
-      } else {
-        alert("このフォルダ内に追加可能な音楽ファイルが見つかりませんでした。");
       }
     } catch (err) {
       console.error("Failed to read folder files for adding:", err);
-      alert("フォルダの読み込みに失敗しました。");
     }
   });
   
   item.appendChild(arrow);
   item.appendChild(icon);
   item.appendChild(label);
+  item.appendChild(btnPlayFolder);
   item.appendChild(btnAdd);
   node.appendChild(item);
   
@@ -1145,7 +1242,8 @@ function renderFileList(files) {
     tr.dataset.index = index;
     
     // クラス設定 (再生中または選択中)
-    const currentPlayingTrack = playlists[playingPlaylistName]?.[currentTrackIndex];
+    const activePlayingList = getActivePlayingList();
+    const currentPlayingTrack = activePlayingList[currentTrackIndex];
     const isCurrentPlaying = currentPlayingTrack && currentPlayingTrack.path === file.path;
     if (isCurrentPlaying) {
       tr.className = 'playing';
@@ -1248,10 +1346,14 @@ function renderFileList(files) {
     
     tr.addEventListener('dblclick', () => {
       if (isPlaylistTab) {
-        playTrack(index);
+        playingSource = 'playlist';
+        const origIdx = playlist.findIndex(f => f.path === file.path);
+        playTrack(origIdx >= 0 ? origIdx : index, 'playlist');
       } else {
-        // エクスプローラ側でのダブルクリック：追加＆即再生
-        showAddConfirmModal([file], true);
+        // フォルダ表示でのダブルクリック：モーダルを出さずにその曲からフォルダをそのまま直接再生
+        const fullSorted = getSortedFileList(currentFolderFiles || []);
+        const folderIdx = fullSorted.findIndex(f => f.path === file.path);
+        playFolderDirectly(currentFolderPath, currentFolderFiles, folderIdx >= 0 ? folderIdx : index);
       }
     });
     
@@ -1282,6 +1384,10 @@ function switchTab(tab) {
   tabFiles.classList.toggle('active', tab === 'files');
   
   btnClearPlaylist.style.display = (tab === 'playlist' && playlist.length > 0) ? 'inline-block' : 'none';
+  const btnPlayFolder = document.getElementById('btn-play-folder');
+  if (btnPlayFolder) {
+    btnPlayFolder.style.display = (tab === 'files') ? 'inline-flex' : 'none';
+  }
   
   // タブ切り替え時に選択状態をクリア
   clearFileSelection();
@@ -1398,11 +1504,13 @@ function removeFromPlaylist(index) {
   playlist.splice(index, 1);
   savePlaylist();
   
-  if (currentTrackIndex === index) {
-    stopCurrentPlayback();
-    currentTrackIndex = -1;
-  } else if (currentTrackIndex > index) {
-    currentTrackIndex--;
+  if (playingSource === 'playlist' && playingPlaylistName === currentPlaylistName) {
+    if (currentTrackIndex === index) {
+      stopCurrentPlayback();
+      currentTrackIndex = -1;
+    } else if (currentTrackIndex > index) {
+      currentTrackIndex--;
+    }
   }
   
   updateFileListHighlight();
@@ -1415,8 +1523,10 @@ function clearPlaylist() {
   if (confirm("演奏リストをクリアしますか？")) {
     playlist = [];
     savePlaylist();
-    stopCurrentPlayback();
-    currentTrackIndex = -1;
+    if (playingSource === 'playlist' && playingPlaylistName === currentPlaylistName) {
+      stopCurrentPlayback();
+      currentTrackIndex = -1;
+    }
     renderFileList([]);
   }
 }
@@ -1425,8 +1535,24 @@ function clearPlaylist() {
 // 6. 再生ロジック (オーディオ & MIDI)
 // ==========================================================================
 
-async function playTrack(index) {
-  if (index < 0 || index >= playlist.length) return;
+function playFolderDirectly(folderPath, files, startIndex = 0) {
+  const sorted = getSortedFileList(files || []);
+  if (sorted.length === 0) return;
+
+  playingSource = 'folder';
+  playingFolderPath = folderPath || currentFolderPath || '';
+  playingFolderFiles = sorted;
+
+  const targetIdx = (startIndex >= 0 && startIndex < sorted.length) ? startIndex : 0;
+  playTrack(targetIdx, 'folder');
+}
+
+async function playTrack(index, source = null) {
+  if (source) {
+    playingSource = source;
+  }
+  const activeList = (playingSource === 'folder') ? playingFolderFiles : playlist;
+  if (!activeList || index < 0 || index >= activeList.length) return;
   
   initAudioEngine();
   
@@ -1437,8 +1563,13 @@ async function playTrack(index) {
   stopCurrentPlayback();
   
   currentTrackIndex = index;
-  playingPlaylistName = currentPlaylistName;
-  const track = playlist[index];
+  if (playingSource === 'folder') {
+    const folderName = playingFolderPath ? playingFolderPath.split(/[\\/]/).filter(Boolean).pop() : 'フォルダ';
+    playingPlaylistName = `フォルダ: ${folderName || playingFolderPath}`;
+  } else {
+    playingPlaylistName = currentPlaylistName;
+  }
+  const track = activeList[index];
   
   // UIの更新 (液晶画面、テーブルのハイライト)
   if (lcdTrackTitle) lcdTrackTitle.textContent = track.name;
@@ -1665,14 +1796,15 @@ function stopSmoothProgressLoop() {
 }
 
 function handleTrackEnded() {
+  const activeList = getActivePlayingList();
   if (repeatMode === 'track') {
     playTrack(currentTrackIndex);
   } else if (repeatMode === 'list') {
     handleNextTrack();
   } else { // repeatMode === 'none' (リピートなし)
-    if (playlist.length === 0) return;
+    if (!activeList || activeList.length === 0) return;
     // 最後の曲であれば停止、そうでなければ次の曲へ
-    if (currentTrackIndex >= playlist.length - 1) {
+    if (currentTrackIndex >= activeList.length - 1) {
       stopCurrentPlayback();
     } else {
       handleNextTrack();
@@ -1681,24 +1813,26 @@ function handleTrackEnded() {
 }
 
 function handlePrevTrack() {
-  if (playlist.length === 0) return;
+  const activeList = getActivePlayingList();
+  if (!activeList || activeList.length === 0) return;
   
   let targetIndex = currentTrackIndex - 1;
   if (targetIndex < 0) {
-    targetIndex = playlist.length - 1;
+    targetIndex = activeList.length - 1;
   }
   playTrack(targetIndex);
 }
 
 function handleNextTrack() {
-  if (playlist.length === 0) return;
+  const activeList = getActivePlayingList();
+  if (!activeList || activeList.length === 0) return;
   
   let targetIndex;
   if (isShuffle) {
-    targetIndex = Math.floor(Math.random() * playlist.length);
+    targetIndex = Math.floor(Math.random() * activeList.length);
   } else {
     targetIndex = currentTrackIndex + 1;
-    if (targetIndex >= playlist.length) {
+    if (targetIndex >= activeList.length) {
       targetIndex = 0;
     }
   }
@@ -1741,19 +1875,35 @@ function handlePlayPause() {
 }
 
 function playCurrentOrSelectedTrack() {
-  const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
+  if (currentTab === 'files') {
+    const sorted = getSortedFileList(currentFolderFiles || []);
+    if (!sorted || sorted.length === 0) return;
+    let targetIndex = 0;
+    if (selectedIndices && selectedIndices.length > 0) {
+      targetIndex = selectedIndices[0];
+    } else if (playingSource === 'folder' && currentTrackIndex >= 0 && currentTrackIndex < sorted.length) {
+      targetIndex = currentTrackIndex;
+    }
+    playFolderDirectly(currentFolderPath, currentFolderFiles, targetIndex);
+    return;
+  }
+
+  const currentList = playlist;
   if (!currentList || currentList.length === 0) return;
   
   let targetIndex = -1;
   if (selectedIndices && selectedIndices.length > 0) {
-    targetIndex = selectedIndices[0];
+    const sorted = getSortedFileList(currentList);
+    const selectedFile = sorted[selectedIndices[0]];
+    const origIdx = selectedFile ? currentList.findIndex(f => f.path === selectedFile.path) : -1;
+    targetIndex = origIdx >= 0 ? origIdx : selectedIndices[0];
   } else if (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) {
     targetIndex = currentTrackIndex;
   } else {
     targetIndex = 0;
   }
   
-  playTrack(targetIndex);
+  playTrack(targetIndex, 'playlist');
 }
 
 function handleStop() {
@@ -1794,8 +1944,8 @@ function setPlayingState(playing) {
 }
 
 function syncFlyoutState() {
-  const currentList = currentTab === 'playlist' ? playlist : currentFolderFiles;
-  const currentTrack = (currentTrackIndex >= 0 && currentTrackIndex < currentList.length) ? currentList[currentTrackIndex] : null;
+  const activeList = getActivePlayingList();
+  const currentTrack = (currentTrackIndex >= 0 && currentTrackIndex < activeList.length) ? activeList[currentTrackIndex] : null;
   
   const max = parseFloat(timelineSlider.max) || 0;
   const val = parseFloat(timelineSlider.value) || 0;
@@ -1909,8 +2059,8 @@ function handleTimelineChange() {
 }
 
 function updateFileListHighlight() {
-  const isPlaylistTab = currentTab === 'playlist';
-  const currentPlayingTrack = playlists[playingPlaylistName]?.[currentTrackIndex];
+  const activePlayingList = getActivePlayingList();
+  const currentPlayingTrack = activePlayingList[currentTrackIndex];
   const playingTrackPath = (isPlaying || (audioTag && audioTag.src) || midiSequencer) && currentPlayingTrack ? currentPlayingTrack.path : null;
 
   document.querySelectorAll('#file-list-body tr').forEach(tr => {
@@ -2598,7 +2748,7 @@ function updatePlaylistTabsState() {
   currentButtons.forEach(btn => {
     const name = btn.dataset.playlistName;
     const isActive = name === currentPlaylistName && currentTab === 'playlist';
-    const isCurrentlyPlayingThis = name === playingPlaylistName && isPlaying;
+    const isCurrentlyPlayingThis = playingSource === 'playlist' && name === playingPlaylistName && isPlaying;
     
     btn.classList.toggle('active', isActive);
     btn.classList.toggle('playing', isCurrentlyPlayingThis);
@@ -2635,7 +2785,7 @@ function renderPlaylistTabs(forceRecreate = false) {
     btn.setAttribute('role', 'tab');
     btn.setAttribute('tabindex', '0');
     const isActive = name === currentPlaylistName && currentTab === 'playlist';
-    const isCurrentlyPlayingThis = name === playingPlaylistName && isPlaying;
+    const isCurrentlyPlayingThis = playingSource === 'playlist' && name === playingPlaylistName && isPlaying;
     btn.className = `tab-button tab-button-playlist ${isActive ? 'active' : ''} ${isCurrentlyPlayingThis ? 'playing' : ''}`;
     
     // リスト名と曲数
@@ -2743,11 +2893,13 @@ function confirmCreateNewPlaylist() {
   const name = newPlaylistInputName.value;
   const trimmed = name.trim();
   if (!trimmed) {
-    alert("演奏リスト名を入力してください。");
+    newPlaylistInputName.focus();
     return;
   }
   if (playlists[trimmed]) {
-    alert("その演奏リスト名は既に存在します。");
+    closeNewPlaylistModal();
+    switchPlaylist(trimmed);
+    switchTab('playlist');
     return;
   }
 
@@ -2767,7 +2919,7 @@ function deletePlaylistByName(name) {
 
   if (confirm(`演奏リスト「${name}」を削除しますか？`)) {
     // 再生中のリストが削除される場合は再生を停止
-    if (name === playingPlaylistName) {
+    if (playingSource === 'playlist' && name === playingPlaylistName) {
       stopCurrentPlayback();
       currentTrackIndex = -1;
       playingPlaylistName = "";
@@ -2846,7 +2998,9 @@ function handleDeleteSelectedClick() {
     const sortedSource = getSortedFileList(playlist);
     const pathsToRemove = selectedIndices.map(idx => sortedSource[idx]?.path).filter(Boolean);
     
-    const currentPlayingTrack = playlists[playingPlaylistName]?.[currentTrackIndex];
+    const currentPlayingTrack = (playingSource === 'playlist' && playingPlaylistName === currentPlaylistName)
+      ? playlists[playingPlaylistName]?.[currentTrackIndex]
+      : null;
     const playingPath = currentPlayingTrack ? currentPlayingTrack.path : null;
     
     // 元のプレイリストから、選択されたパスと一致するファイルを削除
@@ -2855,16 +3009,18 @@ function handleDeleteSelectedClick() {
     savePlaylist();
     
     // 再生中だった曲の位置を再計算する
-    if (playingPath) {
-      const newPlayingIdx = playlist.findIndex(f => f.path === playingPath);
-      if (newPlayingIdx >= 0) {
-        currentTrackIndex = newPlayingIdx;
+    if (playingSource === 'playlist' && playingPlaylistName === currentPlaylistName) {
+      if (playingPath) {
+        const newPlayingIdx = playlist.findIndex(f => f.path === playingPath);
+        if (newPlayingIdx >= 0) {
+          currentTrackIndex = newPlayingIdx;
+        } else {
+          stopCurrentPlayback();
+          currentTrackIndex = -1;
+        }
       } else {
-        stopCurrentPlayback();
         currentTrackIndex = -1;
       }
-    } else {
-      currentTrackIndex = -1;
     }
     
     clearFileSelection();
@@ -2914,16 +3070,19 @@ function showAddConfirmModal(files, playAfterAdd = false) {
       }
       modalSelect.appendChild(opt);
     });
+    modalSelect.disabled = false;
   }
 
   if (modalCreateNewCheck) {
     modalCreateNewCheck.checked = false;
   }
   if (modalNewPlaylistField) {
-    modalNewPlaylistField.classList.add('hidden');
+    modalNewPlaylistField.classList.remove('hidden');
   }
   if (modalNewPlaylistName) {
     modalNewPlaylistName.value = '';
+    modalNewPlaylistName.disabled = false;
+    modalNewPlaylistName.readOnly = false;
   }
 
   if (addConfirmModal) {
@@ -2945,19 +3104,19 @@ function confirmAddPendingFiles() {
   if (pendingAddFiles.length === 0) return;
 
   let targetPlaylistName = currentPlaylistName;
+  const newName = modalNewPlaylistName ? modalNewPlaylistName.value.trim() : '';
+  const wantNewPlaylist = (modalCreateNewCheck && modalCreateNewCheck.checked) || newName !== '';
 
-  if (modalCreateNewCheck && modalCreateNewCheck.checked) {
-    const newName = modalNewPlaylistName.value.trim();
+  if (wantNewPlaylist) {
     if (!newName) {
-      alert("新規作成する演奏リスト名を入力してください。");
+      if (modalNewPlaylistName) {
+        modalNewPlaylistName.focus();
+      }
       return;
     }
-    if (playlists[newName]) {
-      alert("その演奏リスト名は既に存在します。");
-      return;
+    if (!playlists[newName]) {
+      playlists[newName] = [];
     }
-    
-    playlists[newName] = [];
     targetPlaylistName = newName;
   } else {
     const modalSelect = document.getElementById('modal-playlist-select');
@@ -2993,7 +3152,7 @@ function confirmAddPendingFiles() {
     const playFile = pendingAddFiles[0];
     const playIdx = playlist.findIndex(f => f.path === playFile.path);
     if (playIdx >= 0) {
-      playTrack(playIdx);
+      playTrack(playIdx, 'playlist');
     }
   }
 

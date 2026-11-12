@@ -206,6 +206,10 @@
             <span class="material-icons-round">folder</span>
             <span id="current-path-text">フォルダ未選択</span>
           </div>
+          <button id="btn-play-folder" class="btn-action-primary" title="このフォルダ内の曲をそのまま連続再生" style="margin-right: 8px; flex-shrink: 0;">
+            <span class="material-icons-round">play_arrow</span>
+            フォルダ再生
+          </button>
           <!-- 複数選択一括アクション -->
           <div id="selected-actions" class="selected-actions" style="display: none;">
             <button id="btn-add-selected" class="btn-action-primary" title="選択した項目を演奏リストに追加">
@@ -339,7 +343,7 @@
           <label for="modal-create-new-check">新しい演奏リストを作成して追加する</label>
         </div>
         
-        <div id="modal-new-playlist-field" class="modal-field hidden">
+        <div id="modal-new-playlist-field" class="modal-field">
           <label for="modal-new-playlist-name">新しいリスト名：</label>
           <input type="text" id="modal-new-playlist-name" class="modal-input" placeholder="リスト名を入力...">
         </div>
