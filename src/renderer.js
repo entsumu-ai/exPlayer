@@ -2207,29 +2207,8 @@ function updateMiniEqualizerState(playing) {
   });
 }
 
-async function updateAlbumArt(filePath) {
-  if (!window.api || !window.api.getAlbumArt) return;
-  try {
-    const artUrl = await window.api.getAlbumArt(filePath);
-    if (artUrl) {
-      if (lcdAlbumArt) {
-        lcdAlbumArt.src = artUrl;
-        lcdAlbumArt.style.display = 'block';
-      }
-      if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'none';
-      currentAlbumArtUrl = artUrl;
-    } else {
-      if (lcdAlbumArt) {
-        lcdAlbumArt.src = '';
-        lcdAlbumArt.style.display = 'none';
-      }
-      if (lcdArtPlaceholder) lcdArtPlaceholder.style.display = 'flex';
-      currentAlbumArtUrl = null;
-    }
-  } catch (e) {
-    console.warn("Failed to get album art:", e);
-  }
-  syncFlyoutState();
+async function updateAlbumArt() {
+  currentAlbumArtUrl = null;
 }
 
 function loadSavedVolume() {
