@@ -257,6 +257,14 @@ function setupEventListeners() {
   
   // 速度とEQ
   speedSlider.addEventListener('input', handleSpeedChange);
+  speedSlider.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const currentVal = Math.round(parseFloat(speedSlider.value) / 10) * 10;
+    const nextVal = Math.max(50, Math.min(200, currentVal + (e.deltaY < 0 ? 10 : -10)));
+    speedSlider.value = nextVal;
+    handleSpeedChange();
+  }, { passive: false });
   btnResetSpeed.addEventListener('click', resetSpeed);
   eqLow.addEventListener('input', () => handleEQChange('low', eqLow.value));
   eqMid.addEventListener('input', () => handleEQChange('mid', eqMid.value));
@@ -2248,9 +2256,11 @@ function toggleMute() {
 
 function handleSpeedChange() {
   if (!speedSlider) return;
-  const speed = speedSlider.value / 100;
-  if (lcdSpeedVal) lcdSpeedVal.textContent = `${speed.toFixed(2)}x`;
-  if (speedPopVal) speedPopVal.textContent = `${speed.toFixed(2)}x`;
+  const snapped = Math.round(parseFloat(speedSlider.value) / 10) * 10;
+  speedSlider.value = snapped;
+  const speed = snapped / 100;
+  if (lcdSpeedVal) lcdSpeedVal.textContent = `${speed.toFixed(1)}x`;
+  if (speedPopVal) speedPopVal.textContent = `${speed.toFixed(1)}x`;
   
   if (audioTag) audioTag.playbackRate = speed;
   if (midiSequencer) midiSequencer.playbackRate = speed;

@@ -57,11 +57,6 @@
         <span class="material-icons-round">format_list_bulleted</span>
       </button>
 
-      <!-- 音響設定 (FX) -->
-      <button id="btn-fx-toggle" class="btn-tool-icon" title="音響設定 (EQ / 速度)">
-        <span class="material-icons-round">tune</span>
-      </button>
-
       <!-- 液晶パネル表示/非表示（イコライザON/OFFトグル） -->
       <button id="btn-lcd-toggle" class="btn-tool-icon toggle-btn active" title="液晶（イコライザ）表示ON/OFF">
         <span class="material-icons-round">wysiwyg</span>
@@ -70,6 +65,11 @@
       <!-- 常に最前面表示ON/OFF -->
       <button id="btn-always-on-top" class="btn-tool-icon toggle-btn" title="常に最前面表示 ON/OFF">
         <span class="material-icons-round">push_pin</span>
+      </button>
+
+      <!-- 音響設定 (FX) -->
+      <button id="btn-fx-toggle" class="btn-tool-icon" title="音響設定 (EQ / 速度)">
+        <span class="material-icons-round">tune</span>
       </button>
 
       <!-- Fluent Flyout ミニプレイヤーを表示 -->
@@ -262,10 +262,10 @@
       <div class="fx-section">
         <div class="fx-section-header">
           <span class="material-icons-round">speed</span>
-          <span class="label">再生速度 (ピッチ維持): <span id="lcd-speed-val" class="digital-val">1.00x</span></span>
+          <span class="label">再生速度 (ピッチ維持): <span id="lcd-speed-val" class="digital-val">1.0x</span></span>
         </div>
         <div class="speed-control-row">
-          <input type="range" id="speed-slider" min="50" max="200" value="100" class="fx-slider">
+          <input type="range" id="speed-slider" min="50" max="200" step="10" value="100" class="fx-slider">
           <div class="speed-val-row">
             <button id="btn-reset-speed" class="btn-reset">RESET</button>
           </div>
